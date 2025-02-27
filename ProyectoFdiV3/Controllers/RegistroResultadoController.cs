@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using ProyectoFdiV3.Models;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,7 +31,7 @@ namespace ProyectoFdiV3.Controllers
         public async Task<ActionResult<RegistroResultado>> GetRegistroResultado(int id)
         {
             var registroResultado = await _context.RegistroResultados
-                .Include(r => r.CompetenciumNavigation)
+                .Include(r => r.Competencia)
                 .FirstOrDefaultAsync(r => r.IdRegistroResultado == id);
 
             if (registroResultado == null)
@@ -57,6 +58,15 @@ namespace ProyectoFdiV3.Controllers
                 int affectedRows = await _context.SaveChangesAsync();
                 if (affectedRows > 0)
                 {
+                    if(registroResultado.Competencia.IdMod==2)
+                    {
+                        await CalcularClasifBoulders(new ClasificacionRequest { Etapa = (int)registroResultado.Etapa, IdCompetencia = (int)registroResultado.IdCom });
+                    }
+                    if (registroResultado.Competencia.IdMod == 4)
+                    {
+                        await ClasifBloqueCombinada(new ClasificacionRequest { Etapa = (int)registroResultado.Etapa, IdCompetencia = (int)registroResultado.IdCom });
+                    }
+
                     return Ok("Registro actualizado correctamente.");
                 }
                 else
@@ -67,6 +77,136 @@ namespace ProyectoFdiV3.Controllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!RegistroResultadoExists(id))
+                {
+                    return NotFound("El registro no existe.");
+                }
+                else
+                {
+                    return StatusCode(500, "Ocurrió un error al actualizar el registro.");
+                }
+            }
+        }
+
+        [HttpPut("updatevias")]
+        public async Task<IActionResult> UpdateParaVias([FromBody] UpdateParaViasRequest request)
+        {
+            var registroResultado = await _context.RegistroResultados.FindAsync(request.IdRegistroResultado);
+
+            if (registroResultado == null)
+            {
+                return NotFound("Registro no encontrado.");
+            }
+            string labelME1= request.MaxEscala1;
+            string labelME2 = request.MaxEscala2;
+            if (!string.IsNullOrEmpty(request.MaxEscala1) && request.MaxEscala1.Contains("+"))
+            {
+                request.MaxEscala1 = request.MaxEscala1.Replace("+", ".5");
+            }
+
+            if (!string.IsNullOrEmpty(request.MaxEscala2) && request.MaxEscala2.Contains("+"))
+            {
+                request.MaxEscala2 = request.MaxEscala2.Replace("+", ".5");
+            }
+
+
+            registroResultado.MaxEscala1 = float.TryParse(request.MaxEscala1, out var maxEscala1) ? maxEscala1 : (float?)null;
+            registroResultado.MaxEscala2 = float.TryParse(request.MaxEscala2, out var maxEscala2) ? maxEscala2 : (float?)null;
+            registroResultado.LabelMaxEscala1 = labelME1;
+            registroResultado.LabelMaxEscala2 = labelME2;
+            if(registroResultado.MaxEscala1== registroResultado.MaxPresas)
+            {
+                registroResultado.LabelMaxEscala1 = "TOP";
+            }
+            if (registroResultado.MaxEscala2 == registroResultado.MaxPresas)
+            {
+                registroResultado.LabelMaxEscala2 = "TOP";
+            }
+            registroResultado.RegistroCompleto = true;
+
+            _context.Entry(registroResultado).State = EntityState.Modified;
+
+            try
+            {
+                int affectedRows = await _context.SaveChangesAsync();
+                if (affectedRows > 0)
+                {
+                    if (registroResultado.IdMod == 3 || registroResultado.IdMod == 4)
+                    {
+                        await CalcularOrdenVias(new ClasificacionRequest { Etapa = (int)registroResultado.Etapa, IdCompetencia = (int)registroResultado.IdCom });
+                    }
+                    return Ok("Registro actualizado correctamente.");
+                }
+                else
+                {
+                    return BadRequest("No se realizaron cambios en el registro.");
+                }
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!RegistroResultadoExists(request.IdRegistroResultado))
+                {
+                    return NotFound("El registro no existe.");
+                }
+                else
+                {
+                    return StatusCode(500, "Ocurrió un error al actualizar el registro.");
+                }
+            }
+        }
+
+        [HttpPut("updateviasCombinada")]
+        public async Task<IActionResult> UpdateParaViasCombinada([FromBody] UpdateParaViasCombRequest request)
+        {
+            var registroResultado = await _context.RegistroResultados.FindAsync(request.IdRegistroResultado);
+
+            if (registroResultado == null)
+            {
+                return NotFound("Registro no encontrado.");
+            }
+            string labelME1 = request.MaxEscala1;
+            
+            if (!string.IsNullOrEmpty(request.MaxEscala1) && request.MaxEscala1.Contains("+"))
+            {
+                request.MaxEscala1 = request.MaxEscala1.Replace("+", ".5");
+            }
+
+            
+
+
+            registroResultado.MaxEscala1 = float.TryParse(request.MaxEscala1, out var maxEscala1) ? maxEscala1 : (float?)null;
+
+            registroResultado.PuntajeCombinadaVia = double.TryParse(request.PuntajeCombinadaVia, out var puntajeComb) ? double.Parse(request.PuntajeCombinadaVia) : 0;
+
+            registroResultado.LabelMaxEscala1 = labelME1;
+            
+            if (registroResultado.MaxEscala1 == registroResultado.MaxPresas)
+            {
+                registroResultado.LabelMaxEscala1 = "TOP";
+            }
+
+            registroResultado.RegistroCompleto = true;
+
+            _context.Entry(registroResultado).State = EntityState.Modified;
+
+            try
+            {
+                int affectedRows = await _context.SaveChangesAsync();
+                if (affectedRows > 0)
+                {
+                    if (registroResultado.IdMod == 3 || registroResultado.IdMod == 4)
+                    {
+                        await CalcularOrdenVias(new ClasificacionRequest { Etapa = (int)registroResultado.Etapa, IdCompetencia = (int)registroResultado.IdCom });
+                    }
+                    return Ok("Registro actualizado correctamente.");
+                }
+                else
+                {
+                    return BadRequest("No se realizaron cambios en el registro.");
+                }
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!RegistroResultadoExists(request.IdRegistroResultado))
                 {
                     return NotFound("El registro no existe.");
                 }
@@ -116,8 +256,14 @@ namespace ProyectoFdiV3.Controllers
                     IdDep = item.IdDep,
                     IdCom = item.IdCom,
                     Etapa = item.Etapa,
+                    TipoRegistro = item.TipoRegistro,
+                    Orden = item.IdMod>1?int.MaxValue:item.Orden,
                     Tiempo1=0,
                     Tiempo2 = 0,
+                    MaxPresas = item.MaxPresas,
+                    LabelMaxEscala1="0",
+                    LabelMaxEscala2 = "0",
+                    IdMod=item.IdMod
                     // Puedes agregar otros campos según sea necesario
                 };
                 registros.Add(registro);
@@ -135,8 +281,10 @@ namespace ProyectoFdiV3.Controllers
             // Filtra los registros por IdCom y obtiene los deportistas asociados
             var registrosPorIdCom = await _context.RegistroResultados
                                                   .Where(r => r.IdCom == idCom)
-                                                  .Include(r => r.IdDepNavigation) // Incluye la navegación hacia Deportistum
-                                                  .Include(r => r.CompetenciumNavigation) // Incluye la navegación hacia Competencium si necesitas esta información
+                                                  .Include(r => r.Deportista) // Incluye la navegación hacia Deportistum
+                                                  .Include(r => r.Competencia) // Incluye la navegación hacia Competencium si necesitas esta información
+                                                  .OrderBy(r=>r.Etapa)
+                                                  .OrderBy(r=>r.Orden)
                                                   .ToListAsync();
             
             if (registrosPorIdCom == null || !registrosPorIdCom.Any())
@@ -153,33 +301,47 @@ namespace ProyectoFdiV3.Controllers
                 r.IdCom,
                 r.Tiempo1,
                 r.Tiempo2,
-                r.Intento1,
-                r.Intento2,
-                r.Intento3,
-                r.Completado1,
-                r.Completado2,
-                r.Completado3,
                 r.MaxEscala1,
                 r.MaxEscala2,
-                r.MaxEscala3,
-                r.PorcentajeAlcanzado1,
-                r.PorcentajeAlcanzado2,
-                r.PorcentajeAlcanzado3,
-                r.UltimaPresa1,
-                r.UltimaPresa2,
-                r.UltimaPresa3,
-                r.Puesto,
+                r.TopB1,
+                r.TopB2,
+                r.TopB3,
+                r.TopB4,
+                r.ZonaB1,
+                r.ZonaB2,
+                r.ZonaB3,
+                r.ZonaB4,
+                r.ZonaA1,
+                r.ZonaA2,
+                r.ZonaA3,
+                r.ZonaA4,
+                //r.Puesto,
                 r.Etapa,
+                r.Orden,
+                r.TipoRegistro,
                 r.RegistroCompleto,
+                r.IntentosTops,
+                r.IntentosZonas,
+                r.TotalTops,
+                r.TotalZonas,
+                r.LabelMaxEscala1,
+                r.LabelMaxEscala2,
+                r.RankingVia1,
+                r.RankingVia2,
+                r.MaxPresas,
+                r.PuntajeCombinadaVia,
+                r.PuntajeCombinadaBloque,
+                r.TotalZonasL,
+                r.IntentosZonasL,
                 Deportista = new
                 {
-                    r.IdDepNavigation.NombresDep,  // Suponiendo que el deportista tiene un campo 'NombresDep'
-                    r.IdDepNavigation.ApellidosDep // Suponiendo que el deportista tiene un campo 'ApellidosDep'
+                    r.Deportista.NombresDep,  // Suponiendo que el deportista tiene un campo 'NombresDep'
+                    r.Deportista.ApellidosDep // Suponiendo que el deportista tiene un campo 'ApellidosDep'
                 },
                 Competencia = new
                 {
-                    r.CompetenciumNavigation.IdCom,
-                    r.CompetenciumNavigation.IdMod
+                    r.Competencia.IdCom,
+                    r.Competencia.IdMod
                 }
             }).ToList();
 
@@ -213,7 +375,8 @@ namespace ProyectoFdiV3.Controllers
                 var registro = registrosExistentes.FirstOrDefault(r => r.IdRegistroResultado == item.IdRegistroResultado);
                 if (registro != null)
                 {
-                    registro.Puesto = item.Puesto;
+                    //registro.Puesto = item.Puesto;
+                    registro.Orden = item.Orden;
                 }
             }
 
@@ -228,27 +391,419 @@ namespace ProyectoFdiV3.Controllers
             }
         }
 
+        [HttpPost("CalcularClasifBoulders")]
+        public async Task<ActionResult<IEnumerable<object>>> CalcularClasifBoulders([FromBody] ClasificacionRequest request)
+        {
+            if (request == null || request.IdCompetencia <= 0 || request.Etapa <= 0)
+            {
+                return BadRequest("Datos de entrada inválidos.");
+            }
+
+            var registrosCompetidores = await _context.RegistroResultados
+                                             .Where(r => r.RegistroCompleto && r.IdCom == request.IdCompetencia && r.Etapa == request.Etapa)
+                                             .ToListAsync();
+
+            var competidoresOrdenados = registrosCompetidores
+                .Select(competidor => new
+                {
+                    competidor,
+                    TotalTops = new[] { competidor.TopB1, competidor.TopB2, competidor.TopB3, competidor.TopB4 }
+                                    .Count(top => top > 0),
+                    TotalZonas = new[] { competidor.ZonaB1, competidor.ZonaB2, competidor.ZonaB3, competidor.ZonaB4 }
+                                    .Count(zona => zona > 0),
+                    IntentosTops = competidor.TopB1 + competidor.TopB2 + competidor.TopB3 + competidor.TopB4,
+                    IntentosZonas = competidor.ZonaB1 + competidor.ZonaB2 + competidor.ZonaB3 + competidor.ZonaB4
+                })
+                .OrderByDescending(c => c.TotalTops)
+                .ThenByDescending(c => c.TotalZonas)
+                .ThenBy(c => c.IntentosTops)
+                .ThenBy(c => c.IntentosZonas)
+                .ToList();
+
+            // Asignación de posiciones
+            var resultadoFinal = competidoresOrdenados
+                .Select((item, index) => new
+                {
+                    item.competidor.IdRegistroResultado,
+                    item.competidor.IdDep,
+                    item.TotalTops,
+                    item.TotalZonas,
+                    item.IntentosTops,
+                    item.IntentosZonas,
+                    Puesto = index + 1 // Índice base 0, se suma 1 para que empiece en 1
+                })
+                .ToList();
+
+            foreach (var item in resultadoFinal)
+            {
+                var registro = registrosCompetidores.FirstOrDefault(r => r.IdRegistroResultado == item.IdRegistroResultado);
+                if (registro != null)
+                {
+                    registro.Orden = item.Puesto;
+                    registro.Orden = item.Puesto; // Si 'Orden' es diferente de 'Puesto', ajusta esto según corresponda
+                    registro.TotalTops = item.TotalTops;
+                    registro.TotalZonas = item.TotalZonas;
+                    registro.IntentosTops = item.IntentosTops;
+                    registro.IntentosZonas = item.IntentosZonas;
+                }
+            }
+
+            // Guardar cambios en la base de datos
+            await _context.SaveChangesAsync();
+
+            return Ok(resultadoFinal);
+        }
+
+        [HttpPost("ClasifBloqueCombinada")]
+        public async Task<ActionResult<IEnumerable<object>>> ClasifBloqueCombinada([FromBody] ClasificacionRequest request)
+        {
+            if (request == null || request.IdCompetencia <= 0 || request.Etapa <= 0)
+            {
+                return BadRequest("Datos de entrada inválidos.");
+            }
+
+            var registrosCompetidores = await _context.RegistroResultados
+                .Where(r => r.RegistroCompleto && r.IdCom == request.IdCompetencia && r.Etapa == request.Etapa)
+                .ToListAsync();
+
+            var competidoresOrdenados = registrosCompetidores
+                .Select(competidor => new
+                {
+                    competidor,
+                    TotalTops = new[] { competidor.TopB1, competidor.TopB2, competidor.TopB3, competidor.TopB4 }
+                        .Count(top => top > 0),
+                    TotalZonas = new[] { competidor.ZonaB1, competidor.ZonaB2, competidor.ZonaB3, competidor.ZonaB4 }
+                        .Count(zona => zona > 0),
+                    TotalZonasL = new[] { competidor.ZonaA1, competidor.ZonaA2, competidor.ZonaA3, competidor.ZonaA4 }
+                        .Count(zona => zona > 0),
+                    IntentosTops = competidor.TopB1 + competidor.TopB2 + competidor.TopB3 + competidor.TopB4, // SUMA
+                    IntentosZonas = competidor.ZonaB1 + competidor.ZonaB2 + competidor.ZonaB3 + competidor.ZonaB4, // SUMA
+                    IntentosZonasL = competidor.ZonaA1 + competidor.ZonaA2 + competidor.ZonaA3 + competidor.ZonaA4, // SUMA
+                    PuntajeBloques = CalcularPuntajeBloques(competidor) // Se añade cálculo de puntaje
+                })
+                .OrderByDescending(c => c.PuntajeBloques) // Ordenar por puntaje
+                .ToList();
+
+            // Asignación de posiciones y actualización de registros
+            var resultadoFinal = competidoresOrdenados
+                .Select((item, index) => new
+                {
+                    item.competidor.IdRegistroResultado,
+                    item.competidor.IdDep,
+                    item.TotalTops,
+                    item.TotalZonas,
+                    item.TotalZonasL,
+                    item.IntentosTops,
+                    item.IntentosZonas,
+                    item.IntentosZonasL,
+                    item.PuntajeBloques,
+                    Puesto = index + 1
+                })
+                .ToList();
+
+            foreach (var item in resultadoFinal)
+            {
+                var registro = registrosCompetidores.FirstOrDefault(r => r.IdRegistroResultado == item.IdRegistroResultado);
+                if (registro != null)
+                {
+                    registro.Orden = item.Puesto;
+                    registro.TotalTops = item.TotalTops;
+                    registro.TotalZonas = item.TotalZonas;
+                    registro.TotalZonasL = item.TotalZonasL;
+                    registro.IntentosTops = item.IntentosTops;
+                    registro.IntentosZonas = item.IntentosZonas;
+                    registro.IntentosZonasL = item.IntentosZonasL;
+                    registro.PuntajeCombinadaBloque = item.PuntajeBloques;
+                }
+            }
+
+            // Guardar cambios en la base de datos
+            await _context.SaveChangesAsync();
+
+            return Ok(resultadoFinal);
+        }
+
+        private double CalcularPuntajeBloques(RegistroResultado competidor)
+        {
+            double puntaje = 0;
+            int[] tops = { competidor.TopB1, competidor.TopB2, competidor.TopB3, competidor.TopB4 };
+            int[] zonas = { competidor.ZonaB1, competidor.ZonaB2, competidor.ZonaB3, competidor.ZonaB4 };
+            int[] zonasAlt = { competidor.ZonaA1, competidor.ZonaA2, competidor.ZonaA3, competidor.ZonaA4 };
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (zonasAlt[i] == 1) puntaje += 5;  // Zona 1 → 5 puntos
+                if (zonas[i] == 1) puntaje += 5;   // Zona 2 → 10 puntos total
+                if (tops[i] == 1) puntaje += 15;    // Top → 25 puntos
+            }
+
+            // Penalización: Intentos adicionales al segundo intento restan 0.1 puntos cada uno
+            double penalizacion = Math.Max(0, (competidor.IntentosTops + competidor.IntentosZonas + competidor.IntentosZonasL - 8) * 0.1);
+            puntaje -= penalizacion;
+
+            return Math.Max(0, puntaje); // Asegurar que el puntaje no sea negativo
+        }
+
+        [HttpPost("GenerarRegistrosBouldersEtapaSiguiente")]
+        public async Task<ActionResult> GenerarRegistrosEtapaSiguiente([FromBody] GenerarEtapaBouldersRequest request)
+        {
+            // Obtener los resultados de la etapa actual ordenados por 'Orden'
+            var registrosActuales = await _context.RegistroResultados
+                .Where(r => r.IdCom == request.IdCom && r.Etapa == request.EtapaActual)
+                .OrderBy(r => r.Orden)
+                .ToListAsync();
+
+            if (!registrosActuales.Any())
+            {
+                return BadRequest(new { message = "No se encontraron registros para la etapa actual." });
+            }
+
+            // Tomar solo los primeros 'NumeroClasificados'
+            var clasificados = registrosActuales.Take(request.NumeroClasificados).ToList();
+            var nuevosRegistros = new List<RegistroResultado>();
+
+            foreach (var registro in clasificados)
+            {
+                var nuevoRegistro = new RegistroResultado
+                {
+                    IdDep = registro.IdDep,
+                    IdCom = registro.IdCom,
+                    Etapa = request.EtapaSiguiente,
+                    TipoRegistro = request.TipoRegistro, // Nuevo campo para definir el tipo de registro
+                    Orden = int.MaxValue,
+                    Tiempo1 = 0,
+                    Tiempo2 = 0,
+                    // Agregar otros valores necesarios
+                };
+
+                nuevosRegistros.Add(nuevoRegistro);
+            }
+
+            await _context.RegistroResultados.AddRangeAsync(nuevosRegistros);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Registros de la etapa siguiente generados exitosamente" });
+        }
+
+        [HttpPost("GenerarRegistrosViasEtapaSiguiente")]
+        public async Task<ActionResult> GenerarRegistrosViasEtapaSiguiente([FromBody] GenerarEtapaViasRequest request)
+        {
+            await CalcularOrdenVias(new ClasificacionRequest { IdCompetencia = request.IdCom, Etapa = request.EtapaActual });
+            // Obtener los resultados de la etapa actual ordenados por 'Orden'
+            var registrosActuales = await _context.RegistroResultados
+                .Where(r => r.IdCom == request.IdCom && r.Etapa == request.EtapaActual)
+                .OrderBy(r => r.Orden)
+                .ToListAsync();
+
+            if (!registrosActuales.Any())
+            {
+                return BadRequest(new { message = "No se encontraron registros para la etapa actual." });
+            }
+
+
+            // Tomar solo los primeros 'NumeroClasificados'
+            var clasificados = registrosActuales.Take(request.NumeroClasificados).ToList();
+            var nuevosRegistros = new List<RegistroResultado>();
+            //IdDep = item.IdDep,
+            //        IdCom = item.IdCom,
+            //        Etapa = item.Etapa,
+            //        TipoRegistro = item.TipoRegistro,
+            //        Orden = item.Orden,
+            //        Tiempo1 = 0,
+            //        Tiempo2 = 0,
+            //        MaxPresas = item.MaxPresas,
+            //        LabelMaxEscala1 = "0",
+            //        LabelMaxEscala2 = "0",
+            foreach (var registro in clasificados)
+            {
+                var nuevoRegistro = new RegistroResultado
+                {
+                    IdDep = registro.IdDep,
+                    IdCom = registro.IdCom,
+                    Etapa = request.EtapaSiguiente,
+                    TipoRegistro = request.TipoRegistro, // Nuevo campo para definir el tipo de registro
+                    Orden = int.MaxValue,
+                    Tiempo1 = 0,
+                    Tiempo2 = 0,
+                    MaxPresas = registro.MaxPresas,
+                    LabelMaxEscala1 = "0",
+                    LabelMaxEscala2 = "0",
+                    IdMod= registro.IdMod
+                    // Agregar otros valores necesarios
+                };
+
+                nuevosRegistros.Add(nuevoRegistro);
+            }
+
+            await _context.RegistroResultados.AddRangeAsync(nuevosRegistros);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Registros de la etapa siguiente generados exitosamente" });
+        }
+
+        [HttpPost("CalcularOrdenVias")]
+        public async Task<ActionResult<IEnumerable<object>>> CalcularOrdenVias([FromBody] ClasificacionRequest request)
+        {
+            if (request == null || request.IdCompetencia <= 0 || request.Etapa <= 0)
+            {
+                return BadRequest("Datos de entrada inválidos.");
+            }
+
+            var registrosCompetidores = await _context.RegistroResultados
+                .Where(r => r.IdCom == request.IdCompetencia && r.Etapa == request.Etapa)
+                .ToListAsync();
+
+            
+            var maxEscala1Unicos = registrosCompetidores.Select(r => r.MaxEscala1)    // Seleccionamos solo la propiedad MaxEscala1
+                .Distinct()                   // Obtenemos los valores únicos
+                .OrderByDescending(valor => valor)
+                .ToList();                    // Convertimos el resultado en una lista
+
+            int contRanking = 1;
+
+            foreach (var iterMax1 in maxEscala1Unicos)
+            {
+                var registrosConMismoMaxEscala1 = registrosCompetidores
+                .Where(r => r.MaxEscala1 == iterMax1)
+                .ToList();
+
+                // Asignar el valor de ContRanking a cada competidor que tenga el mismo MaxEscala1
+                foreach (var registroME1 in registrosConMismoMaxEscala1)
+                {
+                    registroME1.RankingVia1 = contRanking;
+                }
+                contRanking += registrosConMismoMaxEscala1.Count();
+            }
+
+
+            var maxEscala2Unicos = registrosCompetidores.Select(r => r.MaxEscala2)    // Seleccionamos solo la propiedad MaxEscala1
+                .Distinct()                   // Obtenemos los valores únicos
+                .OrderByDescending(valor => valor)
+                .ToList();                    // Convertimos el resultado en una lista
+
+            int contRankingVia2 = 1;
+
+            foreach (var iterMax2 in maxEscala2Unicos)
+            {
+                var registrosConMismoMaxEscala2 = registrosCompetidores
+                .Where(r => r.MaxEscala2 == iterMax2)
+                .ToList();
+
+                // Asignar el valor de ContRanking a cada competidor que tenga el mismo MaxEscala1
+                foreach (var registroME2 in registrosConMismoMaxEscala2)
+                {
+                    registroME2.RankingVia2 = contRankingVia2;
+                }
+                contRankingVia2 += registrosConMismoMaxEscala2.Count();
+            }
+
+            var competidoresOrdenados = registrosCompetidores
+            .Select(competidor => new
+            {
+                competidor,
+                PuntajeFinalVia =Math.Sqrt((double)(competidor.RankingVia1 * competidor.RankingVia2))
+            })
+            .OrderBy(c => c.PuntajeFinalVia)  // Ordenar por puntaje final combinado (menor es mejor)
+            .ToList();
+
+            // Asignación de posiciones
+            var resultadoFinal = competidoresOrdenados
+                .Select((item, index) => new
+                {
+                    item.competidor.IdRegistroResultado,
+                    item.competidor.IdDep,
+                    item.PuntajeFinalVia,
+                    item.competidor.RankingVia1,
+                    item.competidor.RankingVia2,
+                    Puesto = index + 1  // Índice base 0, se suma 1 para que empiece en 1
+                })
+                .ToList();
+
+            foreach (var item in resultadoFinal)
+            {
+                var registro = registrosCompetidores.FirstOrDefault(r => r.IdRegistroResultado == item.IdRegistroResultado);
+                if (registro != null)
+                {
+                    // Guardamos el puntaje final
+                    registro.RankingVia1 = item.RankingVia1;
+                    registro.RankingVia2 = item.RankingVia2;
+                    registro.PuntajeFinalVia = item.PuntajeFinalVia;
+                    registro.Orden = item.Puesto;
+                }
+            }
+
+            // Guardar cambios en la base de datos
+            await _context.SaveChangesAsync();
+
+            return Ok(resultadoFinal);
+        }
+
+
+
 
         private bool RegistroResultadoExists(int id)
         {
             return _context.RegistroResultados.Any(e => e.IdRegistroResultado == id);
         }
+
     }
 
-   
 
 
 
+    public class ClasificacionRequest
+    {
+        public int IdCompetencia { get; set; }
+        public int Etapa { get; set; }
+    }
     public class BulkCreateItem
     {
         public int IdDep { get; set; }   // Id del deportista
         public int IdCom { get; set; }   // Id de la competencia
         public int Etapa { get; set; } // Etapa de la competencia
+        public int TipoRegistro { get; set; } // Etapa de la competencia
+        public int Orden { get; set; } // Etapa de la competencia
+        public int? MaxPresas { get; set; } // Etapa de la competencia
+        public int? IdMod { get; set; } // Etapa de la competencia
     }
+
+    public class GenerarEtapaBouldersRequest
+    {
+        public int IdCom { get; set; }
+        public int EtapaActual { get; set; }
+        public int EtapaSiguiente { get; set; }
+        public int NumeroClasificados { get; set; }
+        public int TipoRegistro { get; set; } // Nuevo campo
+    }
+
+    public class GenerarEtapaViasRequest
+    {
+        public int IdCom { get; set; }
+        public int EtapaActual { get; set; }
+        public int EtapaSiguiente { get; set; }
+        public int NumeroClasificados { get; set; }
+        public int TipoRegistro { get; set; } // Nuevo campo
+    }
+
 
     public class BulkUpdateItem
     {
         public int IdRegistroResultado { get; set; }
         public int Puesto { get; set; }
+        public int Orden { get; set; } 
     }
+    public class UpdateParaViasRequest
+    {
+        public int IdRegistroResultado { get; set; }
+        public string MaxEscala1 { get; set; }
+        public string MaxEscala2 { get; set; }
+    }
+    public class UpdateParaViasCombRequest
+    {
+        public int IdRegistroResultado { get; set; }
+        public string MaxEscala1 { get; set; }
+        public string PuntajeCombinadaVia { get; set; }
+    }
+
+
 }

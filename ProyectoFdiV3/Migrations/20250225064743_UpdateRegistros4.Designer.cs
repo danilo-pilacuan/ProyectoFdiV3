@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProyectoFdiV3.Models;
 
@@ -11,9 +12,10 @@ using ProyectoFdiV3.Models;
 namespace ProyectoFdiV3.Migrations
 {
     [DbContext(typeof(ProyectoFdiV3DbContext))]
-    partial class ProyectoFdiV3DbContextModelSnapshot : ModelSnapshot
+    [Migration("20250225064743_UpdateRegistros4")]
+    partial class UpdateRegistros4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,9 +113,6 @@ namespace ProyectoFdiV3.Migrations
 
                     b.Property<string>("NombreCom")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("NumPresas")
-                        .HasColumnType("int");
 
                     b.HasKey("IdCom");
 
@@ -349,6 +348,15 @@ namespace ProyectoFdiV3.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdRegistroResultado"), 1L, 1);
 
+                    b.Property<bool>("Completado1")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Completado2")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Completado3")
+                        .HasColumnType("bit");
+
                     b.Property<int?>("Etapa")
                         .HasColumnType("int");
 
@@ -358,7 +366,13 @@ namespace ProyectoFdiV3.Migrations
                     b.Property<int?>("IdDep")
                         .HasColumnType("int");
 
-                    b.Property<int?>("IdMod")
+                    b.Property<int?>("Intento1")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Intento2")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Intento3")
                         .HasColumnType("int");
 
                     b.Property<int>("IntentosTops")
@@ -367,40 +381,28 @@ namespace ProyectoFdiV3.Migrations
                     b.Property<int>("IntentosZonas")
                         .HasColumnType("int");
 
-                    b.Property<int>("IntentosZonasL")
+                    b.Property<int?>("MaxEscala1")
                         .HasColumnType("int");
 
-                    b.Property<string>("LabelMaxEscala1")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("MaxEscala2")
+                        .HasColumnType("int");
 
-                    b.Property<string>("LabelMaxEscala2")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<float?>("MaxEscala1")
-                        .HasColumnType("real");
-
-                    b.Property<float?>("MaxEscala2")
-                        .HasColumnType("real");
-
-                    b.Property<int?>("MaxPresas")
+                    b.Property<int?>("MaxEscala3")
                         .HasColumnType("int");
 
                     b.Property<int?>("Orden")
                         .HasColumnType("int");
 
-                    b.Property<double>("PuntajeCombinadaBloque")
+                    b.Property<double>("PorcentajeAlcanzado1")
                         .HasColumnType("float");
 
-                    b.Property<double>("PuntajeCombinadaVia")
+                    b.Property<double>("PorcentajeAlcanzado2")
                         .HasColumnType("float");
 
-                    b.Property<double>("PuntajeFinalVia")
+                    b.Property<double>("PorcentajeAlcanzado3")
                         .HasColumnType("float");
 
-                    b.Property<int?>("RankingVia1")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("RankingVia2")
+                    b.Property<int?>("Puesto")
                         .HasColumnType("int");
 
                     b.Property<bool>("RegistroCompleto")
@@ -433,19 +435,13 @@ namespace ProyectoFdiV3.Migrations
                     b.Property<int>("TotalZonas")
                         .HasColumnType("int");
 
-                    b.Property<int>("TotalZonasL")
+                    b.Property<int>("UltimaPresa1")
                         .HasColumnType("int");
 
-                    b.Property<int>("ZonaA1")
+                    b.Property<int>("UltimaPresa2")
                         .HasColumnType("int");
 
-                    b.Property<int>("ZonaA2")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ZonaA3")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ZonaA4")
+                    b.Property<int>("UltimaPresa3")
                         .HasColumnType("int");
 
                     b.Property<int>("ZonaB1")

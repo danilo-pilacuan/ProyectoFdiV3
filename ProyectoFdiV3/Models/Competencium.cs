@@ -17,14 +17,16 @@ public partial class Competencium
 
     public bool? ActivoCom { get; set; }
 
-    
+
 
     public int? IdJuez { get; set; }
 
-    
+
     public int? IdSede { get; set; }
 
     public int? IdMod { get; set; }
+
+    public int? NumPresas {get; set;}
 
     public virtual DetalleCompetencium DetalleCompetencia { get; } = new DetalleCompetencium();
 

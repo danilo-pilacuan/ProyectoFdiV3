@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProyectoFdiV3.Models;
 
@@ -11,9 +12,10 @@ using ProyectoFdiV3.Models;
 namespace ProyectoFdiV3.Migrations
 {
     [DbContext(typeof(ProyectoFdiV3DbContext))]
-    partial class ProyectoFdiV3DbContextModelSnapshot : ModelSnapshot
+    [Migration("20250226114803_UpdateRegistros13")]
+    partial class UpdateRegistros13
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -367,9 +369,6 @@ namespace ProyectoFdiV3.Migrations
                     b.Property<int>("IntentosZonas")
                         .HasColumnType("int");
 
-                    b.Property<int>("IntentosZonasL")
-                        .HasColumnType("int");
-
                     b.Property<string>("LabelMaxEscala1")
                         .HasColumnType("nvarchar(max)");
 
@@ -431,9 +430,6 @@ namespace ProyectoFdiV3.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("TotalZonas")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalZonasL")
                         .HasColumnType("int");
 
                     b.Property<int>("ZonaA1")

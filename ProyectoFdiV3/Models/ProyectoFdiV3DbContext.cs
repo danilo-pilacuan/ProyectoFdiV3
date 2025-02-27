@@ -55,12 +55,12 @@ namespace ProyectoFdiV3.Models
 
             // Relaciones para RegistroResultado
             modelBuilder.Entity<RegistroResultado>()
-                .HasOne(r => r.IdDepNavigation)
+                .HasOne(r => r.Deportista)
                 .WithMany(d => d.RegistrosResultados) // Asumiendo que en Deportistum tienes una colección de RegistroResultado
                 .HasForeignKey(r => r.IdDep);
 
             modelBuilder.Entity<RegistroResultado>()
-                .HasOne(r => r.CompetenciumNavigation)
+                .HasOne(r => r.Competencia)
                 .WithMany(c => c.RegistrosResultados) // Asumiendo que en Competencium tienes una colección de RegistroResultado
                 .HasForeignKey(r => r.IdCom); // Cambié a IdCom para coincidir con la propiedad en tu modelo
         }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProyectoFdiV3.Models;
 
@@ -11,9 +12,10 @@ using ProyectoFdiV3.Models;
 namespace ProyectoFdiV3.Migrations
 {
     [DbContext(typeof(ProyectoFdiV3DbContext))]
-    partial class ProyectoFdiV3DbContextModelSnapshot : ModelSnapshot
+    [Migration("20250225091637_UpdateRegistros9")]
+    partial class UpdateRegistros9
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,9 +113,6 @@ namespace ProyectoFdiV3.Migrations
 
                     b.Property<string>("NombreCom")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("NumPresas")
-                        .HasColumnType("int");
 
                     b.HasKey("IdCom");
 
@@ -358,16 +357,10 @@ namespace ProyectoFdiV3.Migrations
                     b.Property<int?>("IdDep")
                         .HasColumnType("int");
 
-                    b.Property<int?>("IdMod")
-                        .HasColumnType("int");
-
                     b.Property<int>("IntentosTops")
                         .HasColumnType("int");
 
                     b.Property<int>("IntentosZonas")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IntentosZonasL")
                         .HasColumnType("int");
 
                     b.Property<string>("LabelMaxEscala1")
@@ -382,17 +375,8 @@ namespace ProyectoFdiV3.Migrations
                     b.Property<float?>("MaxEscala2")
                         .HasColumnType("real");
 
-                    b.Property<int?>("MaxPresas")
-                        .HasColumnType("int");
-
                     b.Property<int?>("Orden")
                         .HasColumnType("int");
-
-                    b.Property<double>("PuntajeCombinadaBloque")
-                        .HasColumnType("float");
-
-                    b.Property<double>("PuntajeCombinadaVia")
-                        .HasColumnType("float");
 
                     b.Property<double>("PuntajeFinalVia")
                         .HasColumnType("float");
@@ -431,21 +415,6 @@ namespace ProyectoFdiV3.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("TotalZonas")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalZonasL")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ZonaA1")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ZonaA2")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ZonaA3")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ZonaA4")
                         .HasColumnType("int");
 
                     b.Property<int>("ZonaB1")
