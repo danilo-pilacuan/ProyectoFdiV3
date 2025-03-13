@@ -28,6 +28,12 @@ public partial class Competencium
 
     public int? NumPresas {get; set;}
 
+    public int? NumPresasR1ClasifVias { get; set; }
+    public int? NumPresasR2ClasifVias { get; set; }
+    public int? NumPresasR1FinalVias { get; set; }
+    public int? NumPresasR2FinalVias { get; set; }
+
+
     public virtual DetalleCompetencium DetalleCompetencia { get; } = new DetalleCompetencium();
 
 

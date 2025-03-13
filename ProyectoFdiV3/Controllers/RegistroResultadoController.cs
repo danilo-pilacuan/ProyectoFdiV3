@@ -67,6 +67,11 @@ namespace ProyectoFdiV3.Controllers
                         await ClasifBloqueCombinada(new ClasificacionRequest { Etapa = (int)registroResultado.Etapa, IdCompetencia = (int)registroResultado.IdCom });
                     }
 
+                    if(registroResultado.Competencia.IdMod==1 && registroResultado.Etapa==1)
+                    {
+                        await OrganizarResultadosVelo(new ClasificacionRequest { Etapa = (int)registroResultado.Etapa, IdCompetencia = (int)registroResultado.IdCom });
+                    }
+
                     return Ok("Registro actualizado correctamente.");
                 }
                 else
@@ -86,6 +91,52 @@ namespace ProyectoFdiV3.Controllers
                 }
             }
         }
+
+
+        [HttpPost("OrganizarResultadosVelo")]
+        public async Task<ActionResult<IEnumerable<object>>> OrganizarResultadosVelo([FromBody] ClasificacionRequest request)
+        {
+            if (request == null || request.IdCompetencia <= 0 || request.Etapa <= 0)
+            {
+                return BadRequest("Datos de entrada inválidos.");
+            }
+
+            var registrosCompetidores = await _context.RegistroResultados
+                .Where(r => r.IdCom == request.IdCompetencia && r.Etapa == request.Etapa)
+                .ToListAsync();
+
+            // Organizar los resultados cuando idMod == 1
+            var registrosConTiemposEditados = registrosCompetidores
+                .OrderBy(r => Math.Min(r.Tiempo1 ?? float.MaxValue, r.Tiempo2 ?? float.MaxValue))  // Ordenar por el menor tiempo entre Tiempo1 y Tiempo2
+                .ToList();
+
+            // Asignación de posiciones
+            var resultadoFinal = registrosConTiemposEditados
+                .Select((item, index) => new
+                {
+                    item.IdRegistroResultado,
+                    item.IdDep,
+                    Puesto = index + 1  // Índice base 0, se suma 1 para que empiece en 1
+                })
+                .ToList();
+
+            // Actualizar los registros con el puesto asignado
+            foreach (var item in resultadoFinal)
+            {
+                var registro = registrosCompetidores.FirstOrDefault(r => r.IdRegistroResultado == item.IdRegistroResultado);
+                if (registro != null)
+                {
+                    // Guardamos el puesto
+                    registro.Orden = item.Puesto;
+                }
+            }
+
+            // Guardar cambios en la base de datos
+            await _context.SaveChangesAsync();
+
+            return Ok(resultadoFinal);
+        }
+
 
         [HttpPut("updatevias")]
         public async Task<IActionResult> UpdateParaVias([FromBody] UpdateParaViasRequest request)
@@ -258,8 +309,8 @@ namespace ProyectoFdiV3.Controllers
                     Etapa = item.Etapa,
                     TipoRegistro = item.TipoRegistro,
                     Orden = item.IdMod>1?int.MaxValue:item.Orden,
-                    Tiempo1=0,
-                    Tiempo2 = 0,
+                    Tiempo1=int.MaxValue/2,
+                    Tiempo2 = int.MaxValue/2,
                     MaxPresas = item.MaxPresas,
                     LabelMaxEscala1="0",
                     LabelMaxEscala2 = "0",
@@ -315,7 +366,8 @@ namespace ProyectoFdiV3.Controllers
                 r.ZonaA2,
                 r.ZonaA3,
                 r.ZonaA4,
-                //r.Puesto,
+                r.RegistroEditadoT1,
+                r.RegistroEditadoT2,
                 r.Etapa,
                 r.Orden,
                 r.TipoRegistro,
@@ -333,6 +385,9 @@ namespace ProyectoFdiV3.Controllers
                 r.PuntajeCombinadaBloque,
                 r.TotalZonasL,
                 r.IntentosZonasL,
+                r.FallRegistro1,
+                r.FallRegistro2,
+                r.SalidaFalse,
                 Deportista = new
                 {
                     r.Deportista.NombresDep,  // Suponiendo que el deportista tiene un campo 'NombresDep'
@@ -640,6 +695,77 @@ namespace ProyectoFdiV3.Controllers
 
             return Ok(new { message = "Registros de la etapa siguiente generados exitosamente" });
         }
+
+        [HttpPost("GenerarResultsCompetenciaVelocidad")]
+        public async Task<ActionResult> GenerarResultsCompetenciaVelocidad([FromBody] ClasificacionRequest request)
+        {
+            // Verificar que la competencia es de tipo "1"
+            var competencia = await _context.Competencias.FirstOrDefaultAsync(c => c.IdCom == request.IdCompetencia);
+
+            if (competencia == null)
+            {
+                return NotFound(new { message = "Competencia no encontrada." });
+            }
+
+            // Solo aplicar la lógica si el IdMod de la competencia es 1 (según tu condición en JavaScript)
+            if (competencia.IdMod == 1)
+            {
+                // Obtener los registros de resultados ordenados por la suma de 'Tiempo1' y 'Tiempo2'
+
+                int takeCount = 16; // Asigna el valor predeterminado (por ejemplo, 16)
+
+
+                var countRegsRes = await _context.RegistroResultados
+                    .Where(r => r.IdCom == request.IdCompetencia && r.Etapa == request.Etapa)
+                    .CountAsync(); // Obtiene el número total de registros
+
+                // Lógica condicional para determinar cuántos tomar
+                if (countRegsRes <= 8)
+                    takeCount = 8;
+                else if (countRegsRes <= 4)
+                    takeCount = 4;
+
+                var registrosResultados = await _context.RegistroResultados
+                    .Where(r => r.IdCom == request.IdCompetencia && r.Etapa == request.Etapa)
+                    .OrderBy(r => r.Tiempo1 + r.Tiempo2)
+                    .Take(takeCount)
+                    .ToListAsync();
+
+
+
+                // Asignar el orden a los primeros 16 clasificados
+                var clasificados = registrosResultados.Select((res, index) => new
+                {
+                    res,
+                    orden = index + 1
+                }).ToList();
+
+                Console.WriteLine("Clasificados a octavos: 👽👽👽👽👽", clasificados);
+
+                // Crear los nuevos registros para la siguiente etapa
+                var resultsOctavos = clasificados.Select(res => new RegistroResultado
+                {
+                    IdCom = request.IdCompetencia,
+                    IdDep = res.res.IdDep,
+                    Etapa = 2, // Siguiente etapa (octavos de final)
+                    TipoRegistro = 2, // Tipo de registro (puedes ajustar esto según tu lógica)
+                    Orden = res.orden
+                }).ToList();
+
+                Console.WriteLine("Post resultsOctavos: 😈😈😈😈", resultsOctavos);
+
+                // Insertar los nuevos registros en la base de datos
+                await _context.RegistroResultados.AddRangeAsync(resultsOctavos);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Clasificación y generación de resultados para octavos de final completada." });
+            }
+
+            return BadRequest(new { message = "La competencia no tiene el tipo de modalidad adecuado." });
+        }
+
+
+
 
         [HttpPost("CalcularOrdenVias")]
         public async Task<ActionResult<IEnumerable<object>>> CalcularOrdenVias([FromBody] ClasificacionRequest request)

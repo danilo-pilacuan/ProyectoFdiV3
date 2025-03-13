@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ProyectoFdiV3.Models;
+using RazorLight;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -63,6 +64,14 @@ builder.Services.AddSwaggerGen(options =>
             new string[] { }
         }
     });
+});
+
+builder.Services.AddScoped<IRazorLightEngine>(provider =>
+{
+    return new RazorLightEngineBuilder()
+        .UseFileSystemProject(Path.Combine(Directory.GetCurrentDirectory()))
+        .UseMemoryCachingProvider()
+        .Build();
 });
 
 var app = builder.Build();

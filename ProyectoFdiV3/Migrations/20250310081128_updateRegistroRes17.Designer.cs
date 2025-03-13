@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProyectoFdiV3.Models;
 
@@ -11,9 +12,10 @@ using ProyectoFdiV3.Models;
 namespace ProyectoFdiV3.Migrations
 {
     [DbContext(typeof(ProyectoFdiV3DbContext))]
-    partial class ProyectoFdiV3DbContextModelSnapshot : ModelSnapshot
+    [Migration("20250310081128_updateRegistroRes17")]
+    partial class updateRegistroRes17
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -113,18 +115,6 @@ namespace ProyectoFdiV3.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("NumPresas")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("NumPresasR1ClasifVias")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("NumPresasR1FinalVias")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("NumPresasR2ClasifVias")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("NumPresasR2FinalVias")
                         .HasColumnType("int");
 
                     b.HasKey("IdCom");
@@ -364,12 +354,6 @@ namespace ProyectoFdiV3.Migrations
                     b.Property<int?>("Etapa")
                         .HasColumnType("int");
 
-                    b.Property<bool>("FallRegistro1")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("FallRegistro2")
-                        .HasColumnType("bit");
-
                     b.Property<int?>("IdCom")
                         .HasColumnType("int");
 
@@ -424,13 +408,7 @@ namespace ProyectoFdiV3.Migrations
                     b.Property<bool>("RegistroCompleto")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("RegistroEditadoT1")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("RegistroEditadoT2")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("SalidaFalse")
+                    b.Property<bool>("RegistroEditaro")
                         .HasColumnType("bit");
 
                     b.Property<float?>("Tiempo1")

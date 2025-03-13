@@ -1,16 +1,29 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.EntityFrameworkCore;
 using ProyectoFdiV3.Models;
+using PuppeteerSharp;
+using RazorLight;
+using System.Text.Json;
 
 [Route("api/Competencia")]
 [ApiController]
 public class CompetenciumController : ControllerBase
 {
     private readonly ProyectoFdiV3DbContext _context;
+    private readonly IRazorLightEngine _razorEngine;
+    private readonly IWebHostEnvironment _webHostEnvironment;
 
-    public CompetenciumController(ProyectoFdiV3DbContext context)
+
+    public CompetenciumController(ProyectoFdiV3DbContext context, IRazorLightEngine razorEngine, IWebHostEnvironment webHostEnvironment)
     {
         _context = context;
+        //_razorEngine = new RazorLightEngineBuilder()
+        //    .UseMemoryCachingProvider()
+        //    .Build();
+        _razorEngine = razorEngine;
+        _webHostEnvironment = webHostEnvironment;
     }
 
     // GET: api/competencium
@@ -27,6 +40,7 @@ public class CompetenciumController : ControllerBase
         var competencium = await _context.Competencias
             .Include(c => c.CompetenciaDeportistas)
                 .ThenInclude(cd => cd.Deportista) // Incluye los deportistas en la relación
+                .ThenInclude(cd=>cd.RegistrosResultados)
             .FirstOrDefaultAsync(c => c.IdCom == id);
 
         if (competencium == null)
@@ -79,6 +93,93 @@ public class CompetenciumController : ControllerBase
         return NoContent();
     }
 
+    [HttpPut("desactivar/{id}")]
+    public async Task<IActionResult> DesactivarCompetencia(int id)
+    {
+        var competencia = await _context.Competencias.FindAsync(id);
+
+        if (competencia == null)
+        {
+            return NotFound();
+        }
+
+        competencia.ActivoCom = false;
+        _context.Entry(competencia).Property(c => c.ActivoCom).IsModified = true;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!CompetenciumExists(id))
+            {
+                return NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        return NoContent();
+    }
+
+    [HttpPatch("actualizar-num-presas/{id}")]
+    public async Task<IActionResult> ActualizarNumPresas(int id, [FromBody] JsonElement data)
+    {
+        var competencia = await _context.Competencias.FindAsync(id);
+
+        if (competencia == null)
+        {
+            return NotFound();
+        }
+
+        // Deserializar manualmente las propiedades opcionales
+        if (data.TryGetProperty("numPresasR1ClasifVias", out var numPresasR1ClasifVias))
+        {
+            competencia.NumPresasR1ClasifVias = numPresasR1ClasifVias.GetInt32();
+            _context.Entry(competencia).Property(c => c.NumPresasR1ClasifVias).IsModified = true;
+        }
+
+        if (data.TryGetProperty("numPresasR2ClasifVias", out var numPresasR2ClasifVias))
+        {
+            competencia.NumPresasR2ClasifVias = numPresasR2ClasifVias.GetInt32();
+            _context.Entry(competencia).Property(c => c.NumPresasR2ClasifVias).IsModified = true;
+        }
+
+        if (data.TryGetProperty("numPresasR1FinalVias", out var numPresasR1FinalVias))
+        {
+            competencia.NumPresasR1FinalVias = numPresasR1FinalVias.GetInt32();
+            _context.Entry(competencia).Property(c => c.NumPresasR1FinalVias).IsModified = true;
+        }
+
+        if (data.TryGetProperty("numPresasR2FinalVias", out var numPresasR2FinalVias))
+        {
+            competencia.NumPresasR2FinalVias = numPresasR2FinalVias.GetInt32();
+            _context.Entry(competencia).Property(c => c.NumPresasR2FinalVias).IsModified = true;
+        }
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!CompetenciumExists(id))
+            {
+                return NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        return Ok("Registros actualizados");
+    }
+
+
     // DELETE: api/competencium/5
     [HttpDelete("{id}")]
     public async Task<ActionResult<Competencium>> DeleteCompetencium(int id)
@@ -94,6 +195,43 @@ public class CompetenciumController : ControllerBase
 
         return competencium;
     }
+
+    [HttpGet("{id}/pdf")]
+    public async Task<IActionResult> GeneratePdf(int id)
+    {
+        var competencia = await _context.Competencias
+            .Include(c => c.CompetenciaDeportistas)
+                .ThenInclude(cd => cd.Deportista)
+            .Include(c => c.RegistrosResultados)
+                .ThenInclude(rr => rr.Deportista)
+            .FirstOrDefaultAsync(c => c.IdCom == id);
+
+        if (competencia == null)
+        {
+            return NotFound("Competencia no encontrada.");
+        }
+
+        // Leer la plantilla HTML desde un archivo externo
+        string templatePath = Path.Combine(_webHostEnvironment.ContentRootPath, "Templates", "CompetenciaVelocidad.cshtml");
+        string template = await System.IO.File.ReadAllTextAsync(templatePath);
+
+        // Renderizar la plantilla con los datos de la competencia
+        string htmlContent = await _razorEngine.CompileRenderStringAsync("competencia_template", template, competencia);
+
+        // Crear PDF con PuppeteerSharp
+        await using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
+        {
+            Headless = true,
+            ExecutablePath = @"C:\Program Files\Google\Chrome\Application\chrome.exe"
+        });
+
+        await using var page = await browser.NewPageAsync();
+        await page.SetContentAsync(htmlContent);
+        var pdfStream = await page.PdfStreamAsync();
+
+        return File(pdfStream, "application/pdf", $"Competencia_{id}.pdf");
+    }
+
 
     private bool CompetenciumExists(int id)
     {

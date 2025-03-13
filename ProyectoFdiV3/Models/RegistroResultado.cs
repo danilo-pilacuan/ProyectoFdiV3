@@ -66,5 +66,13 @@ namespace ProyectoFdiV3.Models
         public double PuntajeCombinadaVia { get; set; }
         public double PuntajeCombinadaBloque { get; set; }
 
+        public bool RegistroEditadoT1 { get; set; }
+        public bool RegistroEditadoT2 { get; set; }
+
+        public bool FallRegistro1 { get; set; }
+        public bool FallRegistro2 { get; set; }
+
+        public bool SalidaFalse { get; set; }
+
     }
 }

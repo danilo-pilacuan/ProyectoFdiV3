@@ -1,0 +1,659 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles de Competencia - @Model.NombreCom</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --light-bg: #ecf0f1;
+            --text-color: #333;
+            --light-text: #fff;
+            --border-color: #ddd;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--light-bg);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        header {
+            border-bottom: 2px solid var(--secondary-color);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+        }
+
+        .competencia-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .competencia-title {
+            flex: 1;
+        }
+
+        .competencia-meta {
+            background-color: var(--light-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-left: 20px;
+            min-width: 250px;
+        }
+
+        .meta-item {
+            margin-bottom: 8px;
+            display: flex;
+        }
+
+        .meta-label {
+            font-weight: bold;
+            min-width: 100px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .fecha {
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--light-text);
+            background-color: var(--accent-color);
+            margin-top: 5px;
+        }
+
+            .badge.active {
+                background-color: var(--success-color);
+            }
+
+            .badge.inactive {
+                background-color: var(--accent-color);
+            }
+
+        h2 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin: 25px 0 15px 0;
+            border-left: 5px solid var(--secondary-color);
+            padding-left: 10px;
+        }
+
+        h3 {
+            color: var(--secondary-color);
+            font-size: 1.4rem;
+            margin: 20px 0 10px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        ul {
+            list-style-type: none;
+            margin-bottom: 20px;
+        }
+
+        li {
+            padding: 10px 15px;
+            margin-bottom: 5px;
+            background-color: var(--light-bg);
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            li:hover {
+                background-color: #dfe6e9;
+            }
+
+        .deportista-nombre {
+            font-weight: 600;
+        }
+
+        .deportista-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .deportista-id {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        .tiempo {
+            color: var(--secondary-color);
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        .tiempos {
+            display: flex;
+            align-items: center;
+        }
+
+        .etapa-section {
+            margin-bottom: 30px;
+        }
+
+        .final li, .tercer-lugar li {
+            background-color: #fff3cd;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .tabla-info {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+            .tabla-info th, .tabla-info td {
+                border: 1px solid var(--border-color);
+                padding: 8px 12px;
+                text-align: left;
+            }
+
+            .tabla-info th {
+                background-color: var(--light-bg);
+                font-weight: 600;
+            }
+
+            .tabla-info tr:nth-child(even) {
+                background-color: #f8f9fa;
+            }
+
+        .seccion-presas {
+            background-color: #f8f9fa;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .presas-titulo {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .presas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .presa-item {
+            padding: 8px;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        @@media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .competencia-header {
+                flex-direction: column;
+            }
+
+            .competencia-meta {
+                margin-left: 0;
+                margin-top: 15px;
+                width: 100%;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            h3 {
+                font-size: 1.3rem;
+            }
+
+            .presas-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @@page {
+            size: A4;
+            margin: 0.4cm;
+        }
+
+        @@media print {
+            .container {
+                page-break-inside: avoid;
+            }
+
+            h1, h2, h3 {
+                page-break-after: avoid;
+            }
+
+            li {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="competencia-header">
+                <div class="competencia-title">
+                    <h1>@Model.NombreCom</h1>
+                    <p class="fecha">Inicio: @Model.FechaInicioCom?.ToString("dd/MM/yyyy")</p>
+                    <p class="fecha">Fin: @Model.FechaFinCom?.ToString("dd/MM/yyyy")</p>
+                    <span class="badge @(Model.ActivoCom == true ? "active" : "inactive")">
+                        @(Model.ActivoCom == true ? "Activa" : "Inactiva")
+                    </span>
+                </div>
+                <div class="competencia-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Sede:</span>
+                        <span>@(Model.IdSedeNavigation?.NombreSede ?? "No especificada")</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Modalidad:</span>
+                        <span>@(Model.IdModNavigation?.NombreMod ?? "No especificada")</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Juez:</span>
+                        <span>@(Model.IdJuezNavigation?.NombreJue ?? "No asignado")</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">ID:</span>
+                        <span>@Model.IdCom</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        @if (Model.NumPresas != null || Model.NumPresasR1ClasifVias != null ||
+        Model.NumPresasR2ClasifVias != null || Model.NumPresasR1FinalVias != null ||
+        Model.NumPresasR2FinalVias != null)
+        {
+            <section class="seccion-presas">
+                <h3 class="presas-titulo">Información de Presas</h3>
+                <div class="presas-grid">
+                    @if (Model.NumPresas != null)
+                    {
+                        <div class="presa-item">
+                            <strong>Total de Presas:</strong> @Model.NumPresas
+                        </div>
+                    }
+                    @if (Model.NumPresasR1ClasifVias != null)
+                    {
+                        <div class="presa-item">
+                            <strong>R1 Clasificación:</strong> @Model.NumPresasR1ClasifVias
+                        </div>
+                    }
+                    @if (Model.NumPresasR2ClasifVias != null)
+                    {
+                        <div class="presa-item">
+                            <strong>R2 Clasificación:</strong> @Model.NumPresasR2ClasifVias
+                        </div>
+                    }
+                    @if (Model.NumPresasR1FinalVias != null)
+                    {
+                        <div class="presa-item">
+                            <strong>R1 Final:</strong> @Model.NumPresasR1FinalVias
+                        </div>
+                    }
+                    @if (Model.NumPresasR2FinalVias != null)
+                    {
+                        <div class="presa-item">
+                            <strong>R2 Final:</strong> @Model.NumPresasR2FinalVias
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+
+        <section class="deportistas-section">
+            <h2>Deportistas Participantes</h2>
+            <ul class="deportistas-list">
+                @foreach (var deportista in Model.CompetenciaDeportistas)
+                {
+                    <li>
+                        <div class="deportista-info">
+                            <span class="deportista-nombre">
+                                @deportista.Deportista.NombresDep @deportista.Deportista.ApellidosDep
+                            </span>
+                            
+                            
+                            
+                        </div>
+                    </li>
+                }
+            </ul>
+        </section>
+
+        <h2>Resultados por Etapas</h2>
+
+        <section class="etapa-section clasificacion">
+            <h3>Clasificación</h3>
+            <ul>
+
+
+                @if (Model.RegistrosResultados != null )
+                {
+                    @foreach (var registro in Model.RegistrosResultados)
+                    {
+                        @if (registro.Etapa == 1)
+                        {
+                        <li>
+                            <div class="deportista-info">
+                                Orden: @registro.Orden
+                            </div>
+                            <div class="deportista-info">
+                                <span class="deportista-nombre">
+                                    @registro.Deportista.NombresDep @registro.Deportista.ApellidosDep
+                                </span>
+                                @* @if (!string.IsNullOrEmpty(registro.Deportista.ClubDep))
+                                {
+                                    <span>Club: @registro.Deportista.ClubDep</span>
+                                } *@
+                            </div>
+                            <div class="tiempos">
+                                @if (registro.Tiempo1 != null)
+                                {
+                                    <span class="tiempo">T1: @registro.Tiempo1</span>
+                                }
+                                @if (registro.Tiempo2 != null)
+                                {
+                                    <span class="tiempo">T2: @registro.Tiempo2</span>
+                                }
+@*                                 @if (registro.PuntajeTotal != null)
+                                {
+                                    <span class="tiempo">Puntaje: @registro.PuntajeTotal</span>
+                                } *@
+                            </div>
+                        </li>
+                        }
+                    }
+                }
+                else
+                {
+                    <li>No hay registros para esta etapa</li>
+                }
+            </ul>
+        </section>
+
+        <section class="etapa-section octavos">
+            <h3>Octavos de Final</h3>
+            <ul>
+
+                @if (Model.RegistrosResultados != null )
+                {
+                    @foreach (var registro in Model.RegistrosResultados)
+                    {
+                        @if (registro.Etapa == 2)
+                        {
+                        <li>
+                            <div class="deportista-info">
+                                <span class="deportista-nombre">
+                                    @registro.Deportista.NombresDep @registro.Deportista.ApellidosDep
+                                </span>
+                                @* @if (!string.IsNullOrEmpty(registro.Deportista.ClubDep))
+                                {
+                                    <span>Club: @registro.Deportista.ClubDep</span>
+                                } *@
+                            </div>
+                            <div class="tiempos">
+                                @if (registro.Tiempo1 != null)
+                                {
+                                    <span class="tiempo">T1: @registro.Tiempo1</span>
+                                }
+                                @if (registro.Tiempo2 != null)
+                                {
+                                    <span class="tiempo">T2: @registro.Tiempo2</span>
+                                }
+                                @* @if (registro.PuntajeTotal != null)
+                                {
+                                    <span class="tiempo">Puntaje: @registro.PuntajeTotal</span>
+                                } *@
+                            </div>
+                        </li>
+                        }
+                    }
+                }
+                else
+                {
+                    <li>No hay registros para esta etapa</li>
+                }
+            </ul>
+        </section>
+
+        <section class="etapa-section cuartos">
+            <h3>Cuartos de Final</h3>
+            <ul>
+                @if (Model.RegistrosResultados != null )
+                {
+                    @foreach (var registro in Model.RegistrosResultados)
+                    {
+                        @if (registro.Etapa == 3)
+                        {
+                        <li>
+                            <div class="deportista-info">
+                                <span class="deportista-nombre">
+                                    @registro.Deportista.NombresDep @registro.Deportista.ApellidosDep
+                                </span>
+                                @* @if (!string.IsNullOrEmpty(registro.Deportista.ClubDep))
+                                {
+                                    <span>Club: @registro.Deportista.ClubDep</span>
+                                } *@
+                            </div>
+                            <div class="tiempos">
+                                @if (registro.Tiempo1 != null)
+                                {
+                                    <span class="tiempo">T1: @registro.Tiempo1</span>
+                                }
+                                @if (registro.Tiempo2 != null)
+                                {
+                                    <span class="tiempo">T2: @registro.Tiempo2</span>
+                                }
+                                @* @if (registro.PuntajeTotal != null)
+                                {
+                                    <span class="tiempo">Puntaje: @registro.PuntajeTotal</span>
+                                } *@
+                            </div>
+                        </li>
+                        }
+                    }
+                }
+                else
+                {
+                    <li>No hay registros para esta etapa</li>
+                }
+            </ul>
+        </section>
+
+        <section class="etapa-section semifinales">
+            <h3>Semifinales</h3>
+            <ul>
+                @if (Model.RegistrosResultados != null )
+                {
+                    @foreach (var registro in Model.RegistrosResultados)
+                    {
+                        @if (registro.Etapa == 4)
+                        {
+                        <li>
+                            <div class="deportista-info">
+                                <span class="deportista-nombre">
+                                    @registro.Deportista.NombresDep @registro.Deportista.ApellidosDep
+                                </span>
+                                @* @if (!string.IsNullOrEmpty(registro.Deportista.ClubDep))
+                                {
+                                    <span>Club: @registro.Deportista.ClubDep</span>
+                                } *@
+                            </div>
+                            <div class="tiempos">
+                                @if (registro.Tiempo1 != null)
+                                {
+                                    <span class="tiempo">T1: @registro.Tiempo1</span>
+                                }
+                                @if (registro.Tiempo2 != null)
+                                {
+                                    <span class="tiempo">T2: @registro.Tiempo2</span>
+                                }
+                                @* @if (registro.PuntajeTotal != null)
+                                {
+                                    <span class="tiempo">Puntaje: @registro.PuntajeTotal</span>
+                                } *@
+                            </div>
+                        </li>
+                        }
+                    }
+                }
+                else
+                {
+                    <li>No hay registros para esta etapa</li>
+                }
+            </ul>
+        </section>
+
+        <section class="etapa-section tercer-lugar">
+            <h3>Tercer Lugar</h3>
+            <ul>
+                @if (Model.RegistrosResultados != null )
+                {
+                    @foreach (var registro in Model.RegistrosResultados)
+                    {
+                        @if (registro.Etapa == 5)
+                        {
+                        <li>
+                            <div class="deportista-info">
+                                <span class="deportista-nombre">
+                                    @registro.Deportista.NombresDep @registro.Deportista.ApellidosDep
+                                </span>
+                                @* @if (!string.IsNullOrEmpty(registro.Deportista.ClubDep))
+                                {
+                                    <span>Club: @registro.Deportista.ClubDep</span>
+                                } *@
+                            </div>
+                            <div class="tiempos">
+                                @if (registro.Tiempo1 != null)
+                                {
+                                    <span class="tiempo">T1: @registro.Tiempo1</span>
+                                }
+                                @if (registro.Tiempo2 != null)
+                                {
+                                    <span class="tiempo">T2: @registro.Tiempo2</span>
+                                }
+                                @* @if (registro.PuntajeTotal != null)
+                                {
+                                    <span class="tiempo">Puntaje: @registro.PuntajeTotal</span>
+                                } *@
+                            </div>
+                        </li>
+                        }
+                    }
+                }
+                else
+                {
+                    <li>No hay registros para esta etapa</li>
+                }
+            </ul>
+        </section>
+
+        <section class="etapa-section final">
+            <h3>Final</h3>
+            <ul>
+                @if (Model.RegistrosResultados != null )
+                {
+                    @foreach (var registro in Model.RegistrosResultados)
+                    {
+                        @if (registro.Etapa == 6)
+                        {
+                        <li>
+                            <div class="deportista-info">
+                                <span class="deportista-nombre">
+                                    @registro.Deportista.NombresDep @registro.Deportista.ApellidosDep
+                                </span>
+                                @* @if (!string.IsNullOrEmpty(registro.Deportista.ClubDep))
+                                {
+                                    <span>Club: @registro.Deportista.ClubDep</span>
+                                } *@
+                            </div>
+                            <div class="tiempos">
+                                @if (registro.Tiempo1 != null)
+                                {
+                                    <span class="tiempo">T1: @registro.Tiempo1</span>
+                                }
+                                @if (registro.Tiempo2 != null)
+                                {
+                                    <span class="tiempo">T2: @registro.Tiempo2</span>
+                                }
+                                @* @if (registro.PuntajeTotal != null)
+                                {
+                                    <span class="tiempo">Puntaje: @registro.PuntajeTotal</span>
+                                } *@
+                            </div>
+                        </li>
+                        }
+                    }
+                }
+                else
+                {
+                    <li>No hay registros para esta etapa</li>
+                }
+            </ul>
+        </section>
+
+        <footer>
+            <p>Sistema de Gestión de Competencias Deportivas</p>
+            @using System
+
+            <p>Reporte generado el @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+        </footer>
+    </div>
+</body>
+</html>
