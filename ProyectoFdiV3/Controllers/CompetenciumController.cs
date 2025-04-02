@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using ProyectoFdiV3.Models;
 using PuppeteerSharp;
 using RazorLight;
 using System.Text.Json;
+using ProyectoFdiV3.Hubs;
 
 [Route("api/Competencia")]
 [ApiController]
@@ -14,9 +16,10 @@ public class CompetenciumController : ControllerBase
     private readonly ProyectoFdiV3DbContext _context;
     private readonly IRazorLightEngine _razorEngine;
     private readonly IWebHostEnvironment _webHostEnvironment;
+    private readonly IHubContext<NotificationHub> _hubContext; // Inyectar SignalR
 
 
-    public CompetenciumController(ProyectoFdiV3DbContext context, IRazorLightEngine razorEngine, IWebHostEnvironment webHostEnvironment)
+    public CompetenciumController(ProyectoFdiV3DbContext context, IRazorLightEngine razorEngine, IWebHostEnvironment webHostEnvironment, IHubContext<NotificationHub> hubContext)
     {
         _context = context;
         //_razorEngine = new RazorLightEngineBuilder()
@@ -24,6 +27,7 @@ public class CompetenciumController : ControllerBase
         //    .Build();
         _razorEngine = razorEngine;
         _webHostEnvironment = webHostEnvironment;
+        _hubContext = hubContext;
     }
 
     // GET: api/competencium
@@ -42,6 +46,9 @@ public class CompetenciumController : ControllerBase
                 .ThenInclude(cd => cd.Deportista) // Incluye los deportistas en la relación
                 .ThenInclude(cd=>cd.RegistrosResultados)
             .FirstOrDefaultAsync(c => c.IdCom == id);
+
+        //await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Hello from competencium");
+
 
         if (competencium == null)
         {
@@ -218,18 +225,27 @@ public class CompetenciumController : ControllerBase
         // Renderizar la plantilla con los datos de la competencia
         string htmlContent = await _razorEngine.CompileRenderStringAsync("competencia_template", template, competencia);
 
+
         // Crear PDF con PuppeteerSharp
         await using var browser = await Puppeteer.LaunchAsync(new LaunchOptions
         {
             Headless = true,
-            ExecutablePath = @"C:\Program Files\Google\Chrome\Application\chrome.exe"
+            ExecutablePath = @"C:\Program Files\Google\Chrome\Application\chrome.exe",
+            Args = new[] {
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-gpu",
+        "--disable-software-rasterizer",
+        "--single-process",
+        "--no-zygote"
+    }
         });
 
         await using var page = await browser.NewPageAsync();
         await page.SetContentAsync(htmlContent);
         var pdfStream = await page.PdfStreamAsync();
 
-        return File(pdfStream, "application/pdf", $"Competencia_{id}.pdf");
+        return File(pdfStream, "application/pdf", $"Reporte_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.pdf");
     }
 
 

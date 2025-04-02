@@ -2,11 +2,26 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using ProyectoFdiV3.Hubs;
 using ProyectoFdiV3.Models;
 using RazorLight;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("CorsPolicy", policy =>
+//    {
+//        policy.AllowAnyOrigin()
+//              .AllowAnyMethod()
+//              .AllowAnyHeader()
+//              .AllowCredentials();
+//    });
+//});
+
+builder.Services.AddSignalR();
+
 
 var jwtIssuer = builder.Configuration.GetSection("Jwt:Issuer").Get<string>();
 var jwtKey = builder.Configuration.GetSection("Jwt:Key").Get<string>();
@@ -75,6 +90,11 @@ builder.Services.AddScoped<IRazorLightEngine>(provider =>
 });
 
 var app = builder.Build();
+
+//app.UseCors("CorsPolicy");
+
+app.MapHub<NotificationHub>("/notificationHub");
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

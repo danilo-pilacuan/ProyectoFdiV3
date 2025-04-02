@@ -160,15 +160,24 @@ namespace ProyectoFdiV3.Controllers
             }
 
 
-            registroResultado.MaxEscala1 = float.TryParse(request.MaxEscala1, out var maxEscala1) ? maxEscala1 : (float?)null;
-            registroResultado.MaxEscala2 = float.TryParse(request.MaxEscala2, out var maxEscala2) ? maxEscala2 : (float?)null;
+            //registroResultado.MaxEscala1 = float.TryParse(request.MaxEscala1, out var maxEscala1) ? maxEscala1 : (float?)null;
+            //registroResultado.MaxEscala2 = float.TryParse(request.MaxEscala2, out var maxEscala2) ? maxEscala2 : (float?)null;
+
+            registroResultado.MaxEscala1 = request.MaxEscala1 == "TOP"
+                ? registroResultado.MaxPresas1 + 1
+                : float.Parse(request.MaxEscala1);
+
+            registroResultado.MaxEscala2 = request.MaxEscala2 == "TOP"
+                ? registroResultado.MaxPresas2 + 1
+                : float.Parse(request.MaxEscala2);
+
             registroResultado.LabelMaxEscala1 = labelME1;
             registroResultado.LabelMaxEscala2 = labelME2;
-            if(registroResultado.MaxEscala1== registroResultado.MaxPresas)
+            if(registroResultado.MaxEscala1== registroResultado.MaxPresas1+1)
             {
                 registroResultado.LabelMaxEscala1 = "TOP";
             }
-            if (registroResultado.MaxEscala2 == registroResultado.MaxPresas)
+            if (registroResultado.MaxEscala2 == registroResultado.MaxPresas2+1)
             {
                 registroResultado.LabelMaxEscala2 = "TOP";
             }
@@ -230,7 +239,7 @@ namespace ProyectoFdiV3.Controllers
 
             registroResultado.LabelMaxEscala1 = labelME1;
             
-            if (registroResultado.MaxEscala1 == registroResultado.MaxPresas)
+            if (registroResultado.MaxEscala1 == registroResultado.MaxPresas1+1)
             {
                 registroResultado.LabelMaxEscala1 = "TOP";
             }
@@ -311,7 +320,8 @@ namespace ProyectoFdiV3.Controllers
                     Orden = item.IdMod>1?int.MaxValue:item.Orden,
                     Tiempo1=int.MaxValue/2,
                     Tiempo2 = int.MaxValue/2,
-                    MaxPresas = item.MaxPresas,
+                    MaxPresas1 = item.MaxPresas1,
+                    MaxPresas2 = item.MaxPresas2,
                     LabelMaxEscala1="0",
                     LabelMaxEscala2 = "0",
                     IdMod=item.IdMod
@@ -380,7 +390,8 @@ namespace ProyectoFdiV3.Controllers
                 r.LabelMaxEscala2,
                 r.RankingVia1,
                 r.RankingVia2,
-                r.MaxPresas,
+                r.MaxPresas1,
+                r.MaxPresas2,
                 r.PuntajeCombinadaVia,
                 r.PuntajeCombinadaBloque,
                 r.TotalZonasL,
@@ -680,7 +691,8 @@ namespace ProyectoFdiV3.Controllers
                     Orden = int.MaxValue,
                     Tiempo1 = 0,
                     Tiempo2 = 0,
-                    MaxPresas = registro.MaxPresas,
+                    MaxPresas1 = request.MaxPresas1,
+                    MaxPresas2 = request.MaxPresas2,
                     LabelMaxEscala1 = "0",
                     LabelMaxEscala2 = "0",
                     IdMod= registro.IdMod
@@ -889,7 +901,8 @@ namespace ProyectoFdiV3.Controllers
         public int Etapa { get; set; } // Etapa de la competencia
         public int TipoRegistro { get; set; } // Etapa de la competencia
         public int Orden { get; set; } // Etapa de la competencia
-        public int? MaxPresas { get; set; } // Etapa de la competencia
+        public int? MaxPresas1 { get; set; } // Etapa de la competencia
+        public int? MaxPresas2 { get; set; } // Etapa de la competencia
         public int? IdMod { get; set; } // Etapa de la competencia
     }
 
@@ -909,6 +922,8 @@ namespace ProyectoFdiV3.Controllers
         public int EtapaSiguiente { get; set; }
         public int NumeroClasificados { get; set; }
         public int TipoRegistro { get; set; } // Nuevo campo
+        public int MaxPresas1 { get; set; }
+        public int MaxPresas2 { get; set; }
     }
 
 

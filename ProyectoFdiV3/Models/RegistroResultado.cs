@@ -62,7 +62,8 @@ namespace ProyectoFdiV3.Models
         public int? RankingVia2 { get; set; }
         public double PuntajeFinalVia { get; set; }
 
-        public int? MaxPresas { get; set; }
+        public int? MaxPresas1 { get; set; }
+        public int? MaxPresas2 { get; set; }
         public double PuntajeCombinadaVia { get; set; }
         public double PuntajeCombinadaBloque { get; set; }
 
