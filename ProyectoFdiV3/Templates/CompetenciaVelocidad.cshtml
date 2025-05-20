@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@model ProyectoFdiV3.Models.Competencium
+@using System.Linq
+
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -19,7 +22,7 @@
         * {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            /* box-sizing: border-box; */
         }
 
         body {
@@ -35,7 +38,7 @@
             margin: 0 auto;
             background-color: white;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
             padding: 30px;
         }
 
@@ -233,9 +236,9 @@
         }
 
         @@media (max-width: 768px) {
-            .container {
+            /* .container {
                 padding: 15px;
-            }
+            } */
 
             .competencia-header {
                 flex-direction: column;
@@ -265,7 +268,9 @@
         }
         @@page {
             size: A4;
-            margin: 0.4cm;
+            margin-top: 0.8cm;
+            margin-bottom: 0.8cm;
+           /*  margin: 0.4cm; */
         }
 
         @@media print {
@@ -280,6 +285,17 @@
             li {
                 page-break-inside: avoid;
             }
+
+            table {
+                border: 1px solid black; /* Borde exterior de la tabla */
+                border-collapse: collapse; /* Fusiona los bordes de las celdas */
+                
+            }
+
+            td, th {
+                border: 1px solid black; /* Borde de las celdas */
+                padding: 4px; /* Espaciado interno de las celdas */
+            }
         }
     </style>
 </head>
@@ -291,27 +307,19 @@
                     <h1>@Model.NombreCom</h1>
                     <p class="fecha">Inicio: @Model.FechaInicioCom?.ToString("dd/MM/yyyy")</p>
                     <p class="fecha">Fin: @Model.FechaFinCom?.ToString("dd/MM/yyyy")</p>
-                    <span class="badge @(Model.ActivoCom == true ? "active" : "inactive")">
-                        @(Model.ActivoCom == true ? "Activa" : "Inactiva")
-                    </span>
+                    @* <span class="badge @(Model.ActivoCom == true ? "active" : "inactive")">
+                    @(Model.ActivoCom == true ? "Activa" : "Inactiva")
+                    </span> *@
                 </div>
                 <div class="competencia-meta">
                     <div class="meta-item">
                         <span class="meta-label">Sede:</span>
-                        <span>@(Model.IdSedeNavigation?.NombreSede ?? "No especificada")</span>
+                        <span>@(Model.CompetenciaSede?.NombreSede ?? "No especificada")</span>
                     </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Modalidad:</span>
-                        <span>@(Model.IdModNavigation?.NombreMod ?? "No especificada")</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Juez:</span>
-                        <span>@(Model.IdJuezNavigation?.NombreJue ?? "No asignado")</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">ID:</span>
-                        <span>@Model.IdCom</span>
-                    </div>
+                    @* <div class="meta-item">
+                    <span class="meta-label">ID:</span>
+                    <span>@Model.IdCom</span>
+                    </div> *@
                 </div>
             </div>
         </header>
@@ -359,293 +367,820 @@
 
         <section class="deportistas-section">
             <h2>Deportistas Participantes</h2>
-            <ul class="deportistas-list">
-                @foreach (var deportista in Model.CompetenciaDeportistas)
-                {
-                    <li>
-                        <div class="deportista-info">
-                            <span class="deportista-nombre">
-                                @deportista.Deportista.NombresDep @deportista.Deportista.ApellidosDep
-                            </span>
-                            
-                            
-                            
-                        </div>
-                    </li>
-                }
-            </ul>
+                <table class="table-clasificacion" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Nombre Completo</th>
+                            <th>Club</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var registro in Model.CompetenciaDeportistas)
+                        {
+
+                            <tr>
+                                <td style="text-align: center">@registro.Deportista.NombresDep @registro.Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@registro.Deportista.DeportistaClub.NombreClub</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
         </section>
 
         <h2>Resultados por Etapas</h2>
 
         <section class="etapa-section clasificacion">
             <h3>Clasificación</h3>
-            <ul>
 
-
-                @if (Model.RegistrosResultados != null )
-                {
-                    @foreach (var registro in Model.RegistrosResultados)
-                    {
-                        @if (registro.Etapa == 1)
+            @if (Model.RegistrosResultados != null && Model.RegistrosResultados.Any(r => r.Etapa == 1))
+            {
+                <table class="table-clasificacion" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Orden</th>
+                            <th>Deportista</th>
+                            <th>Tiempo 1</th>
+                            <th>Tiempo 2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var registro in Model.RegistrosResultados.OrderBy(r => r.Orden))
                         {
-                        <li>
-                            <div class="deportista-info">
-                                Orden: @registro.Orden
-                            </div>
-                            <div class="deportista-info">
-                                <span class="deportista-nombre">
-                                    @registro.Deportista.NombresDep @registro.Deportista.ApellidosDep
-                                </span>
-                                @* @if (!string.IsNullOrEmpty(registro.Deportista.ClubDep))
-                                {
-                                    <span>Club: @registro.Deportista.ClubDep</span>
-                                } *@
-                            </div>
-                            <div class="tiempos">
-                                @if (registro.Tiempo1 != null)
-                                {
-                                    <span class="tiempo">T1: @registro.Tiempo1</span>
-                                }
-                                @if (registro.Tiempo2 != null)
-                                {
-                                    <span class="tiempo">T2: @registro.Tiempo2</span>
-                                }
-@*                                 @if (registro.PuntajeTotal != null)
-                                {
-                                    <span class="tiempo">Puntaje: @registro.PuntajeTotal</span>
-                                } *@
-                            </div>
-                        </li>
+                            if (registro.Etapa == 1)
+                            {
+                                <tr>
+                                    <td style="text-align: center">@registro.Orden</td>
+                                    <td style="text-align: center">@registro.Deportista.NombresDep @registro.Deportista.ApellidosDep</td>
+                                    <td style="text-align: center">@(registro.Tiempo1 != null ? (registro.Tiempo1 > 10000 ? "-" : registro.Tiempo1.ToString()) : "-")</td>
+                                    <td style="text-align: center">@(registro.Tiempo2 != null ? (registro.Tiempo2 > 10000 ? "-" : registro.Tiempo2.ToString()) : "-")</td>
+                                </tr>
+                            }
                         }
-                    }
-                }
-                else
-                {
-                    <li>No hay registros para esta etapa</li>
-                }
-            </ul>
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No hay registros para esta etapa</p>
+            }
         </section>
 
-        <section class="etapa-section octavos">
+        @{
+            var registrosEtapa2 = Model.RegistrosResultados.Where(r => r.Etapa == 2).ToList();
+            var arrayRegistrosE2 = new ProyectoFdiV3.Models.RegistroResultado[16]; // de 0 a 16 inclusive
+
+            foreach (var r in registrosEtapa2)
+            {
+                if(r.Orden!=null)
+                {
+                    if (r.Orden >= 0 && r.Orden <= 16)
+                    {
+                        Console.WriteLine("r.Orden: "+r.Orden);
+                        arrayRegistrosE2[(int)r.Orden-1] = r;
+                    }
+                }
+            }
+        }
+
+         <section class="etapa-section octavos">
             <h3>Octavos de Final</h3>
-            <ul>
+          
+            @if (arrayRegistrosE2 != null && arrayRegistrosE2[0] != null && arrayRegistrosE2[0].Deportista != null && arrayRegistrosE2.Any(r => r.Etapa == 2))
+            {
+                <table class="table-clasificacion" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Deportista 1</th>
+                            <th>Tiempo 1</th>
+                            <th>Deportista 2</th>
+                            <th>Tiempo 2</th>
+                            <th>Ganador</th>
+                        </tr>
+                    </thead>
+                    <tbody>    
+                        
+                        <tr>
+                            @if(arrayRegistrosE2[0] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[0].Deportista.NombresDep @arrayRegistrosE2[0].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[0].Tiempo1 != null ? (arrayRegistrosE2[0].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[0].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
 
-                @if (Model.RegistrosResultados != null )
+                            @if(arrayRegistrosE2[15]!=null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[15].Deportista.NombresDep @arrayRegistrosE2[15].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[15].Tiempo1 != null ? (arrayRegistrosE2[15].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[15].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE2[0] != null && arrayRegistrosE2[15] != null)
+                            {
+                                if(arrayRegistrosE2[0].Tiempo1 < arrayRegistrosE2[15].Tiempo1)
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[0].Deportista.NombresDep @arrayRegistrosE2[0].Deportista.ApellidosDep</td>
+                                }
+                                else
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[15].Deportista.NombresDep @arrayRegistrosE2[15].Deportista.ApellidosDep</td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            @if(arrayRegistrosE2[7] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[7].Deportista.NombresDep @arrayRegistrosE2[7].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[7].Tiempo1 != null ? (arrayRegistrosE2[7].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[7].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if(arrayRegistrosE2[8]!=null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[8].Deportista.NombresDep @arrayRegistrosE2[8].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[8].Tiempo1 != null ? (arrayRegistrosE2[8].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[8].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE2[7] != null && arrayRegistrosE2[8] != null)
+                            {
+                                if(arrayRegistrosE2[7].Tiempo1 < arrayRegistrosE2[8].Tiempo1)
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[7].Deportista.NombresDep @arrayRegistrosE2[7].Deportista.ApellidosDep</td>
+                                }
+                                else
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[8].Deportista.NombresDep @arrayRegistrosE2[8].Deportista.ApellidosDep</td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            @if(arrayRegistrosE2[3] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[3].Deportista.NombresDep @arrayRegistrosE2[3].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[3].Tiempo1 != null ? (arrayRegistrosE2[3].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[3].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if(arrayRegistrosE2[12]!=null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[12].Deportista.NombresDep @arrayRegistrosE2[12].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[12].Tiempo1 != null ? (arrayRegistrosE2[12].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[12].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE2[3] != null && arrayRegistrosE2[12] != null)
+                            {
+                                if(arrayRegistrosE2[3].Tiempo1 < arrayRegistrosE2[12].Tiempo1)
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[3].Deportista.NombresDep @arrayRegistrosE2[3].Deportista.ApellidosDep</td>
+                                }
+                                else
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[12].Deportista.NombresDep @arrayRegistrosE2[12].Deportista.ApellidosDep</td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            @if(arrayRegistrosE2[4] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[4].Deportista.NombresDep @arrayRegistrosE2[4].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[4].Tiempo1 != null ? (arrayRegistrosE2[4].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[4].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if(arrayRegistrosE2[11]!=null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[11].Deportista.NombresDep @arrayRegistrosE2[11].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[11].Tiempo1 != null ? (arrayRegistrosE2[11].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[11].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE2[4] != null && arrayRegistrosE2[11] != null)
+                            {
+                                if(arrayRegistrosE2[4].Tiempo1 < arrayRegistrosE2[11].Tiempo1)
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[4].Deportista.NombresDep @arrayRegistrosE2[4].Deportista.ApellidosDep</td>
+                                }
+                                else
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[11].Deportista.NombresDep @arrayRegistrosE2[11].Deportista.ApellidosDep</td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            @if(arrayRegistrosE2[1] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[1].Deportista.NombresDep @arrayRegistrosE2[1].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[1].Tiempo1 != null ? (arrayRegistrosE2[1].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[1].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if(arrayRegistrosE2[14]!=null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[14].Deportista.NombresDep @arrayRegistrosE2[14].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[14].Tiempo1 != null ? (arrayRegistrosE2[14].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[14].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE2[1] != null && arrayRegistrosE2[14] != null)
+                            {
+                                if(arrayRegistrosE2[1].Tiempo1 < arrayRegistrosE2[14].Tiempo1)
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[1].Deportista.NombresDep @arrayRegistrosE2[1].Deportista.ApellidosDep</td>
+                                }
+                                else
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[14].Deportista.NombresDep @arrayRegistrosE2[14].Deportista.ApellidosDep</td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            @if(arrayRegistrosE2[6] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[6].Deportista.NombresDep @arrayRegistrosE2[6].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[6].Tiempo1 != null ? (arrayRegistrosE2[6].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[6].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if(arrayRegistrosE2[9]!=null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[9].Deportista.NombresDep @arrayRegistrosE2[9].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[9].Tiempo1 != null ? (arrayRegistrosE2[9].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[9].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE2[6] != null && arrayRegistrosE2[9] != null)
+                            {
+                                if(arrayRegistrosE2[6].Tiempo1 < arrayRegistrosE2[9].Tiempo1)
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[6].Deportista.NombresDep @arrayRegistrosE2[6].Deportista.ApellidosDep</td>
+                                }
+                                else
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[9].Deportista.NombresDep @arrayRegistrosE2[9].Deportista.ApellidosDep</td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            @if (arrayRegistrosE2[2] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[2].Deportista.NombresDep @arrayRegistrosE2[2].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[2].Tiempo1 != null ? (arrayRegistrosE2[2].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[2].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE2[13] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[13].Deportista.NombresDep @arrayRegistrosE2[13].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[13].Tiempo1 != null ? (arrayRegistrosE2[13].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[13].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE2[2] != null && arrayRegistrosE2[13] != null)
+                            {
+                                if (arrayRegistrosE2[2].Tiempo1 < arrayRegistrosE2[13].Tiempo1)
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[2].Deportista.NombresDep @arrayRegistrosE2[2].Deportista.ApellidosDep</td>
+                                }
+                                else
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[13].Deportista.NombresDep @arrayRegistrosE2[13].Deportista.ApellidosDep</td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            @if (arrayRegistrosE2[5] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[5].Deportista.NombresDep @arrayRegistrosE2[5].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[5].Tiempo1 != null ? (arrayRegistrosE2[5].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[5].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE2[10] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE2[10].Deportista.NombresDep @arrayRegistrosE2[10].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE2[10].Tiempo1 != null ? (arrayRegistrosE2[10].Tiempo1 > 10000 ? "-" : arrayRegistrosE2[10].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE2[5] != null && arrayRegistrosE2[10] != null)
+                            {
+                                if (arrayRegistrosE2[5].Tiempo1 < arrayRegistrosE2[10].Tiempo1)
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[5].Deportista.NombresDep @arrayRegistrosE2[5].Deportista.ApellidosDep</td>
+                                }
+                                else
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE2[10].Deportista.NombresDep @arrayRegistrosE2[10].Deportista.ApellidosDep</td>
+                                }
+                            }
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No hay registros para esta etapa</p>
+            }
+        </section> 
+ 
+        @{
+            var registrosEtapa3 = Model.RegistrosResultados.Where(r => r.Etapa == 3).ToList();
+            var arrayRegistrosE3 = new ProyectoFdiV3.Models.RegistroResultado[8]; // de 0 a 16 inclusive
+
+            foreach (var r in registrosEtapa3)
+            {
+                if(r.Orden!=null)
                 {
-                    @foreach (var registro in Model.RegistrosResultados)
+                    if (r.Orden >= 0 && r.Orden <= 8)
                     {
-                        @if (registro.Etapa == 2)
-                        {
-                        <li>
-                            <div class="deportista-info">
-                                <span class="deportista-nombre">
-                                    @registro.Deportista.NombresDep @registro.Deportista.ApellidosDep
-                                </span>
-                                @* @if (!string.IsNullOrEmpty(registro.Deportista.ClubDep))
-                                {
-                                    <span>Club: @registro.Deportista.ClubDep</span>
-                                } *@
-                            </div>
-                            <div class="tiempos">
-                                @if (registro.Tiempo1 != null)
-                                {
-                                    <span class="tiempo">T1: @registro.Tiempo1</span>
-                                }
-                                @if (registro.Tiempo2 != null)
-                                {
-                                    <span class="tiempo">T2: @registro.Tiempo2</span>
-                                }
-                                @* @if (registro.PuntajeTotal != null)
-                                {
-                                    <span class="tiempo">Puntaje: @registro.PuntajeTotal</span>
-                                } *@
-                            </div>
-                        </li>
-                        }
+                        Console.WriteLine("r.Orden: "+r.Orden);
+                        arrayRegistrosE3[(int)r.Orden-1] = r;
                     }
                 }
-                else
-                {
-                    <li>No hay registros para esta etapa</li>
-                }
-            </ul>
-        </section>
+            }
+        }
 
         <section class="etapa-section cuartos">
             <h3>Cuartos de Final</h3>
-            <ul>
-                @if (Model.RegistrosResultados != null )
-                {
-                    @foreach (var registro in Model.RegistrosResultados)
-                    {
-                        @if (registro.Etapa == 3)
-                        {
-                        <li>
-                            <div class="deportista-info">
-                                <span class="deportista-nombre">
-                                    @registro.Deportista.NombresDep @registro.Deportista.ApellidosDep
-                                </span>
-                                @* @if (!string.IsNullOrEmpty(registro.Deportista.ClubDep))
+            @if (arrayRegistrosE3 != null && arrayRegistrosE3[0] != null && arrayRegistrosE3[0].Deportista != null && arrayRegistrosE3.Any(r => r.Etapa == 3))
+            {
+                <table class="table-clasificacion" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Deportista 1</th>
+                            <th>Tiempo 1</th>
+                            <th>Deportista 2</th>
+                            <th>Tiempo 2</th>
+                            <th>Ganador</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <tr>
+                            @if (arrayRegistrosE3[0] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE3[0].Deportista.NombresDep @arrayRegistrosE3[0].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE3[0].Tiempo1 != null ? (arrayRegistrosE3[0].Tiempo1 > 10000 ? "-" : arrayRegistrosE3[0].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE3[7] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE3[7].Deportista.NombresDep @arrayRegistrosE3[7].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE3[7].Tiempo1 != null ? (arrayRegistrosE3[7].Tiempo1 > 10000 ? "-" : arrayRegistrosE3[7].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE3[0] != null && arrayRegistrosE3[7] != null)
+                            {
+                                if (arrayRegistrosE3[0].Tiempo1 < arrayRegistrosE3[7].Tiempo1)
                                 {
-                                    <span>Club: @registro.Deportista.ClubDep</span>
-                                } *@
-                            </div>
-                            <div class="tiempos">
-                                @if (registro.Tiempo1 != null)
-                                {
-                                    <span class="tiempo">T1: @registro.Tiempo1</span>
+                                    <td style="text-align: center">@arrayRegistrosE3[0].Deportista.NombresDep @arrayRegistrosE3[0].Deportista.ApellidosDep</td>
                                 }
-                                @if (registro.Tiempo2 != null)
+                                else
                                 {
-                                    <span class="tiempo">T2: @registro.Tiempo2</span>
+                                    <td style="text-align: center">@arrayRegistrosE3[7].Deportista.NombresDep @arrayRegistrosE3[7].Deportista.ApellidosDep</td>
                                 }
-                                @* @if (registro.PuntajeTotal != null)
+                            }
+                        </tr>
+                        <tr>
+                            @if (arrayRegistrosE3[3] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE3[3].Deportista.NombresDep @arrayRegistrosE3[3].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE3[3].Tiempo1 != null ? (arrayRegistrosE3[3].Tiempo1 > 10000 ? "-" : arrayRegistrosE3[3].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE3[4] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE3[4].Deportista.NombresDep @arrayRegistrosE3[4].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE3[4].Tiempo1 != null ? (arrayRegistrosE3[4].Tiempo1 > 10000 ? "-" : arrayRegistrosE3[4].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE3[3] != null && arrayRegistrosE3[4] != null)
+                            {
+                                if (arrayRegistrosE3[3].Tiempo1 < arrayRegistrosE3[4].Tiempo1)
                                 {
-                                    <span class="tiempo">Puntaje: @registro.PuntajeTotal</span>
-                                } *@
-                            </div>
-                        </li>
-                        }
-                    }
-                }
-                else
-                {
-                    <li>No hay registros para esta etapa</li>
-                }
-            </ul>
+                                    <td style="text-align: center">@arrayRegistrosE3[3].Deportista.NombresDep @arrayRegistrosE3[3].Deportista.ApellidosDep</td>
+                                }
+                                else
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE3[4].Deportista.NombresDep @arrayRegistrosE3[4].Deportista.ApellidosDep</td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            @if (arrayRegistrosE3[1] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE3[1].Deportista.NombresDep @arrayRegistrosE3[1].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE3[1].Tiempo1 != null ? (arrayRegistrosE3[1].Tiempo1 > 10000 ? "-" : arrayRegistrosE3[1].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE3[6] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE3[6].Deportista.NombresDep @arrayRegistrosE3[6].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE3[6].Tiempo1 != null ? (arrayRegistrosE3[6].Tiempo1 > 10000 ? "-" : arrayRegistrosE3[6].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE3[1] != null && arrayRegistrosE3[6] != null)
+                            {
+                                if (arrayRegistrosE3[1].Tiempo1 < arrayRegistrosE3[6].Tiempo1)
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE3[1].Deportista.NombresDep @arrayRegistrosE3[1].Deportista.ApellidosDep</td>
+                                }
+                                else
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE3[6].Deportista.NombresDep @arrayRegistrosE3[6].Deportista.ApellidosDep</td>
+                                }
+                            }
+                        </tr>
+                        <tr>
+                            @if (arrayRegistrosE3[2] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE3[2].Deportista.NombresDep @arrayRegistrosE3[2].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE3[2].Tiempo1 != null ? (arrayRegistrosE3[2].Tiempo1 > 10000 ? "-" : arrayRegistrosE3[2].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE3[5] != null)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE3[5].Deportista.NombresDep @arrayRegistrosE3[5].Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@(arrayRegistrosE3[5].Tiempo1 != null ? (arrayRegistrosE3[5].Tiempo1 > 10000 ? "-" : arrayRegistrosE3[5].Tiempo1.ToString()) : "-")</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">NA</td>
+                                <td style="text-align: center">-</td>
+                            }
+
+                            @if (arrayRegistrosE3[2] != null && arrayRegistrosE3[5] != null)
+                            {
+                                if (arrayRegistrosE3[2].Tiempo1 < arrayRegistrosE3[5].Tiempo1)
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE3[2].Deportista.NombresDep @arrayRegistrosE3[2].Deportista.ApellidosDep</td>
+                                }
+                                else
+                                {
+                                    <td style="text-align: center">@arrayRegistrosE3[5].Deportista.NombresDep @arrayRegistrosE3[5].Deportista.ApellidosDep</td>
+                                }
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No hay registros para esta etapa</p>
+            }
         </section>
 
-        <section class="etapa-section semifinales">
-            <h3>Semifinales</h3>
-            <ul>
-                @if (Model.RegistrosResultados != null )
+        @{
+            var registrosEtapa4 = Model.RegistrosResultados.Where(r => r.Etapa == 4).ToList();
+            var arrayRegistrosE4 = new ProyectoFdiV3.Models.RegistroResultado[4]; // de 0 a 16 inclusive
+
+            foreach (var r in registrosEtapa4)
+            {
+                if (r.Orden != null)
                 {
-                    @foreach (var registro in Model.RegistrosResultados)
+                    if (r.Orden >= 0 && r.Orden <= 4)
                     {
-                        @if (registro.Etapa == 4)
-                        {
-                        <li>
-                            <div class="deportista-info">
-                                <span class="deportista-nombre">
-                                    @registro.Deportista.NombresDep @registro.Deportista.ApellidosDep
-                                </span>
-                                @* @if (!string.IsNullOrEmpty(registro.Deportista.ClubDep))
-                                {
-                                    <span>Club: @registro.Deportista.ClubDep</span>
-                                } *@
-                            </div>
-                            <div class="tiempos">
-                                @if (registro.Tiempo1 != null)
-                                {
-                                    <span class="tiempo">T1: @registro.Tiempo1</span>
-                                }
-                                @if (registro.Tiempo2 != null)
-                                {
-                                    <span class="tiempo">T2: @registro.Tiempo2</span>
-                                }
-                                @* @if (registro.PuntajeTotal != null)
-                                {
-                                    <span class="tiempo">Puntaje: @registro.PuntajeTotal</span>
-                                } *@
-                            </div>
-                        </li>
-                        }
+                        Console.WriteLine("r.Orden: " + r.Orden);
+                        arrayRegistrosE4[(int)r.Orden - 1] = r;
                     }
                 }
-                else
-                {
-                    <li>No hay registros para esta etapa</li>
-                }
-            </ul>
+            }
+        }
+        <section class="etapa-section semifinales">
+            <h3>Semifinales</h3>
+            @if (arrayRegistrosE4 != null && arrayRegistrosE4[0] != null && arrayRegistrosE4[0].Deportista != null && arrayRegistrosE4.Any(r => r.Etapa == 4))
+            {
+                <table class="table-clasificacion" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Deportista 1</th>
+                        <th>Tiempo 1</th>
+                        <th>Deportista 2</th>
+                        <th>Tiempo 2</th>
+                        <th>Ganador</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        @if (arrayRegistrosE4[0] != null)
+                        {
+                            <td style="text-align: center">@arrayRegistrosE4[0].Deportista.NombresDep @arrayRegistrosE4[0].Deportista.ApellidosDep</td>
+                            <td style="text-align: center">@(arrayRegistrosE4[0].Tiempo1 != null ? (arrayRegistrosE4[0].Tiempo1 > 10000 ? "-" : arrayRegistrosE4[0].Tiempo1.ToString()) : "-")</td>
+                        }
+                        else
+                        {
+                            <td style="text-align: center">NA</td>
+                            <td style="text-align: center">-</td>
+                        }
+
+                        @if (arrayRegistrosE4[3] != null)
+                        {
+                            <td style="text-align: center">@arrayRegistrosE4[3].Deportista.NombresDep @arrayRegistrosE4[3].Deportista.ApellidosDep</td>
+                            <td style="text-align: center">@(arrayRegistrosE4[3].Tiempo1 != null ? (arrayRegistrosE4[3].Tiempo1 > 10000 ? "-" : arrayRegistrosE4[3].Tiempo1.ToString()) : "-")</td>
+                        }
+                        else
+                        {
+                            <td style="text-align: center">NA</td>
+                            <td style="text-align: center">-</td>
+                        }
+
+                        @if (arrayRegistrosE4[0] != null && arrayRegistrosE4[3] != null)
+                        {
+                            if (arrayRegistrosE4[0].Tiempo1 < arrayRegistrosE4[3].Tiempo1)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE4[0].Deportista.NombresDep @arrayRegistrosE4[0].Deportista.ApellidosDep</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">@arrayRegistrosE4[3].Deportista.NombresDep @arrayRegistrosE4[3].Deportista.ApellidosDep</td>
+                            }
+                        }
+                    </tr>
+                    <tr>
+                        @if (arrayRegistrosE4[1] != null)
+                        {
+                            <td style="text-align: center">@arrayRegistrosE4[1].Deportista.NombresDep @arrayRegistrosE4[1].Deportista.ApellidosDep</td>
+                            <td style="text-align: center">@(arrayRegistrosE4[1].Tiempo1 != null ? (arrayRegistrosE4[1].Tiempo1 > 10000 ? "-" : arrayRegistrosE4[1].Tiempo1.ToString()) : "-")</td>
+                        }
+                        else
+                        {
+                            <td style="text-align: center">NA</td>
+                            <td style="text-align: center">-</td>
+                        }
+
+                        @if (arrayRegistrosE4[2] != null)
+                        {
+                            <td style="text-align: center">@arrayRegistrosE4[2].Deportista.NombresDep @arrayRegistrosE4[2].Deportista.ApellidosDep</td>
+                            <td style="text-align: center">@(arrayRegistrosE4[2].Tiempo1 != null ? (arrayRegistrosE4[2].Tiempo1 > 10000 ? "-" : arrayRegistrosE4[2].Tiempo1.ToString()) : "-")</td>
+                        }
+                        else
+                        {
+                            <td style="text-align: center">NA</td>
+                            <td style="text-align: center">-</td>
+                        }
+
+                        @if (arrayRegistrosE4[1] != null && arrayRegistrosE4[2] != null)
+                        {
+                            if (arrayRegistrosE4[1].Tiempo1 < arrayRegistrosE4[2].Tiempo1)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE4[1].Deportista.NombresDep @arrayRegistrosE4[1].Deportista.ApellidosDep</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">@arrayRegistrosE4[2].Deportista.NombresDep @arrayRegistrosE4[2].Deportista.ApellidosDep</td>
+                            }
+                        }
+                    </tr>
+
+                </tbody>
+            </table>}
+            else
+            {
+                <p>No hay registros para esta etapa</p>
+            }
         </section>
+
+
+        @{
+            var registrosEtapa5 = Model.RegistrosResultados.Where(r => r.Etapa == 5).ToList();
+            var arrayRegistrosE5 = new ProyectoFdiV3.Models.RegistroResultado[2]; // de 0 a 16 inclusive
+
+            foreach (var r in registrosEtapa5)
+            {
+                if (r.Orden != null)
+                {
+                    if (r.Orden >= 3 && r.Orden <= 4)
+                    {
+                        Console.WriteLine("r.Orden: " + r.Orden);
+                        arrayRegistrosE5[(int)r.Orden - 3] = r;
+                    }
+                }
+            }
+        }
 
         <section class="etapa-section tercer-lugar">
             <h3>Tercer Lugar</h3>
-            <ul>
-                @if (Model.RegistrosResultados != null )
-                {
-                    @foreach (var registro in Model.RegistrosResultados)
-                    {
-                        @if (registro.Etapa == 5)
+            <table class="table-clasificacion" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Deportista 1</th>
+                        <th>Tiempo 1</th>
+                        <th>Deportista 2</th>
+                        <th>Tiempo 2</th>
+                        <th>Ganador</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        @if (arrayRegistrosE5[0] != null)
                         {
-                        <li>
-                            <div class="deportista-info">
-                                <span class="deportista-nombre">
-                                    @registro.Deportista.NombresDep @registro.Deportista.ApellidosDep
-                                </span>
-                                @* @if (!string.IsNullOrEmpty(registro.Deportista.ClubDep))
-                                {
-                                    <span>Club: @registro.Deportista.ClubDep</span>
-                                } *@
-                            </div>
-                            <div class="tiempos">
-                                @if (registro.Tiempo1 != null)
-                                {
-                                    <span class="tiempo">T1: @registro.Tiempo1</span>
-                                }
-                                @if (registro.Tiempo2 != null)
-                                {
-                                    <span class="tiempo">T2: @registro.Tiempo2</span>
-                                }
-                                @* @if (registro.PuntajeTotal != null)
-                                {
-                                    <span class="tiempo">Puntaje: @registro.PuntajeTotal</span>
-                                } *@
-                            </div>
-                        </li>
+                            <td style="text-align: center">@arrayRegistrosE5[0].Deportista.NombresDep @arrayRegistrosE5[0].Deportista.ApellidosDep</td>
+                            <td style="text-align: center">@(arrayRegistrosE5[0].Tiempo1 != null ? (arrayRegistrosE5[0].Tiempo1 > 10000 ? "-" : arrayRegistrosE5[0].Tiempo1.ToString()) : "-")</td>
                         }
+                        else
+                        {
+                            <td style="text-align: center">NA</td>
+                            <td style="text-align: center">-</td>
+                        }
+
+                        @if (arrayRegistrosE5[1] != null)
+                        {
+                            <td style="text-align: center">@arrayRegistrosE5[1].Deportista.NombresDep @arrayRegistrosE5[1].Deportista.ApellidosDep</td>
+                            <td style="text-align: center">@(arrayRegistrosE5[1].Tiempo1 != null ? (arrayRegistrosE5[1].Tiempo1 > 10000 ? "-" : arrayRegistrosE5[1].Tiempo1.ToString()) : "-")</td>
+                        }
+                        else
+                        {
+                            <td style="text-align: center">NA</td>
+                            <td style="text-align: center">-</td>
+                        }
+
+                        @if (arrayRegistrosE5[0] != null && arrayRegistrosE5[1] != null)
+                        {
+                            if (arrayRegistrosE5[0].Tiempo1 < arrayRegistrosE5[1].Tiempo1)
+                            {
+                                <td style="text-align: center">@arrayRegistrosE5[0].Deportista.NombresDep @arrayRegistrosE5[0].Deportista.ApellidosDep</td>
+                            }
+                            else
+                            {
+                                <td style="text-align: center">@arrayRegistrosE5[1].Deportista.NombresDep @arrayRegistrosE5[1].Deportista.ApellidosDep</td>
+                            }
+                        }
+                    </tr>
+
+                </tbody>
+            </table>
+
+        </section>
+
+        @{
+            var registrosEtapa6 = Model.RegistrosResultados.Where(r => r.Etapa == 6).ToList();
+            var arrayRegistrosE6 = new ProyectoFdiV3.Models.RegistroResultado[2]; // de 0 a 16 inclusive
+
+            foreach (var r in registrosEtapa6)
+            {
+                if (r.Orden != null)
+                {
+                    if (r.Orden >= 0 && r.Orden <= 2)
+                    {
+                        Console.WriteLine("r.Orden: " + r.Orden);
+                        arrayRegistrosE6[(int)r.Orden - 1] = r;
                     }
                 }
-                else
-                {
-                    <li>No hay registros para esta etapa</li>
-                }
-            </ul>
-        </section>
+            }
+        }
 
         <section class="etapa-section final">
             <h3>Final</h3>
-            <ul>
-                @if (Model.RegistrosResultados != null )
+            <table class="table-clasificacion" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Deportista 1</th>
+                        <th>Tiempo 1</th>
+                        <th>Deportista 2</th>
+                        <th>Tiempo 2</th>
+                        <th>Ganador</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr>
+                @if (arrayRegistrosE6[0] != null)
                 {
-                    @foreach (var registro in Model.RegistrosResultados)
-                    {
-                        @if (registro.Etapa == 6)
-                        {
-                        <li>
-                            <div class="deportista-info">
-                                <span class="deportista-nombre">
-                                    @registro.Deportista.NombresDep @registro.Deportista.ApellidosDep
-                                </span>
-                                @* @if (!string.IsNullOrEmpty(registro.Deportista.ClubDep))
-                                {
-                                    <span>Club: @registro.Deportista.ClubDep</span>
-                                } *@
-                            </div>
-                            <div class="tiempos">
-                                @if (registro.Tiempo1 != null)
-                                {
-                                    <span class="tiempo">T1: @registro.Tiempo1</span>
-                                }
-                                @if (registro.Tiempo2 != null)
-                                {
-                                    <span class="tiempo">T2: @registro.Tiempo2</span>
-                                }
-                                @* @if (registro.PuntajeTotal != null)
-                                {
-                                    <span class="tiempo">Puntaje: @registro.PuntajeTotal</span>
-                                } *@
-                            </div>
-                        </li>
-                        }
-                    }
+                    <td style="text-align: center">@arrayRegistrosE6[0].Deportista.NombresDep @arrayRegistrosE6[0].Deportista.ApellidosDep</td>
+                    <td style="text-align: center">@(arrayRegistrosE6[0].Tiempo1 != null ? (arrayRegistrosE6[0].Tiempo1 > 10000 ? "-" : arrayRegistrosE6[0].Tiempo1.ToString()) : "-")</td>
                 }
                 else
                 {
-                    <li>No hay registros para esta etapa</li>
+                    <td style="text-align: center">NA</td>
+                    <td style="text-align: center">-</td>
                 }
-            </ul>
+
+                @if (arrayRegistrosE6[1] != null)
+                {
+                    <td style="text-align: center">@arrayRegistrosE6[1].Deportista.NombresDep @arrayRegistrosE6[1].Deportista.ApellidosDep</td>
+                    <td style="text-align: center">@(arrayRegistrosE6[1].Tiempo1 != null ? (arrayRegistrosE6[1].Tiempo1 > 10000 ? "-" : arrayRegistrosE6[1].Tiempo1.ToString()) : "-")</td>
+                }
+                else
+                {
+                    <td style="text-align: center">NA</td>
+                    <td style="text-align: center">-</td>
+                }
+
+                @if (arrayRegistrosE6[0] != null && arrayRegistrosE6[1] != null)
+                {
+                    if (arrayRegistrosE6[0].Tiempo1 < arrayRegistrosE6[1].Tiempo1)
+                    {
+                        <td style="text-align: center">@arrayRegistrosE6[0].Deportista.NombresDep @arrayRegistrosE6[0].Deportista.ApellidosDep</td>
+                    }
+                    else
+                    {
+                        <td style="text-align: center">@arrayRegistrosE6[1].Deportista.NombresDep @arrayRegistrosE6[1].Deportista.ApellidosDep</td>
+                    }
+                }
+            </tr>
+                </tbody>
+                </table>
         </section>
 
         <footer>

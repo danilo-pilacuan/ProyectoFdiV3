@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProyectoFdiV3.Models;
 
@@ -47,7 +48,9 @@ public partial class Competencium
 
     public virtual Modalidad? IdModNavigation { get; set; }
 
-    public virtual Sede? IdSedeNavigation { get; set; }
+    [ForeignKey("IdSede")] // Indica que CompetenciaSede está relacionada con IdSede
+
+    public virtual Sede? CompetenciaSede { get; set; }
 
     public virtual ICollection<CompetenciaDeportista> CompetenciaDeportistas { get; set; } = new List<CompetenciaDeportista>();
 

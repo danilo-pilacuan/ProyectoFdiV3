@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProyectoFdiV3.Models;
 
@@ -25,7 +26,8 @@ public partial class Deportistum
     public int? IdEnt { get; set; }
 
 
-    public virtual Club? IdClubNavigation { get; set; }
+    [ForeignKey("IdClub")] // Indica que CompetenciaSede está relacionada con IdSede
+    public virtual Club? DeportistaClub { get; set; }
 
     public virtual Entrenador? IdEntNavigation { get; set; }
 

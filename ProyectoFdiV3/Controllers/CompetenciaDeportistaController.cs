@@ -134,15 +134,15 @@ namespace ProyectoFdiV3.Controllers
             var dtosSet = new HashSet<(int, int)>(dtos.Select(d => (d.IdCom, d.IdDep)));
             var existentesSet = new HashSet<(int, int)>(competenciaDeportistasActuales.Select(cd => (cd.Competencia.IdCom, cd.Deportista.IdDep)));
 
-            var aEliminar = competenciaDeportistasActuales.Where(cd => !dtosSet.Contains((cd.Competencia.IdCom, cd.Deportista.IdDep))).ToList();
+            //var aEliminar = competenciaDeportistasActuales.Where(cd => !dtosSet.Contains((cd.Competencia.IdCom, cd.Deportista.IdDep))).ToList();
             var aAgregar = dtos.Where(dto => !existentesSet.Contains((dto.IdCom, dto.IdDep))).ToList();
 
             // Eliminar los registros que ya no están en la nueva lista
-            if (aEliminar.Any())
-            {
-                _context.CompetenciaDeportistas.RemoveRange(aEliminar);
-                _logger.LogInformation("Se eliminaron {Count} registros de CompetenciaDeportista.", aEliminar.Count);
-            }
+            //if (aEliminar.Any())
+            //{
+            //    _context.CompetenciaDeportistas.RemoveRange(aEliminar);
+            //    _logger.LogInformation("Se eliminaron {Count} registros de CompetenciaDeportista.", aEliminar.Count);
+            //}
 
             // Agregar los nuevos registros
             if (aAgregar.Any())
@@ -174,7 +174,8 @@ namespace ProyectoFdiV3.Controllers
             // Guardar cambios
             await _context.SaveChangesAsync();
 
-            return Ok(new { mensaje = "Operación completada", eliminados = aEliminar.Count, agregados = aAgregar.Count });
+            //return Ok(new { mensaje = "Operación completada", eliminados = aEliminar.Count, agregados = aAgregar.Count });
+            return Ok(new { mensaje = "Operación completada", agregados = aAgregar.Count });
         }
 
 

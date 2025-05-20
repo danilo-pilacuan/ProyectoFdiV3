@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProyectoFdiV3.Models;
 
@@ -11,9 +12,10 @@ using ProyectoFdiV3.Models;
 namespace ProyectoFdiV3.Migrations
 {
     [DbContext(typeof(ProyectoFdiV3DbContext))]
-    partial class ProyectoFdiV3DbContextModelSnapshot : ModelSnapshot
+    [Migration("20250421055604_cambioSede")]
+    partial class cambioSede
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -88,6 +90,9 @@ namespace ProyectoFdiV3.Migrations
                     b.Property<bool?>("ActivoCom")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("CompetenciaSedeIdSede")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("FechaFinCom")
                         .HasColumnType("datetime2");
 
@@ -126,13 +131,13 @@ namespace ProyectoFdiV3.Migrations
 
                     b.HasKey("IdCom");
 
+                    b.HasIndex("CompetenciaSedeIdSede");
+
                     b.HasIndex("IdCatNavigationIdCat");
 
                     b.HasIndex("IdJuez");
 
                     b.HasIndex("IdMod");
-
-                    b.HasIndex("IdSede");
 
                     b.ToTable("Competencias");
                 });
@@ -561,6 +566,10 @@ namespace ProyectoFdiV3.Migrations
 
             modelBuilder.Entity("ProyectoFdiV3.Models.Competencium", b =>
                 {
+                    b.HasOne("ProyectoFdiV3.Models.Sede", "CompetenciaSede")
+                        .WithMany("Competencias")
+                        .HasForeignKey("CompetenciaSedeIdSede");
+
                     b.HasOne("ProyectoFdiV3.Models.Categorium", "IdCatNavigation")
                         .WithMany("Competencia")
                         .HasForeignKey("IdCatNavigationIdCat");
@@ -573,10 +582,6 @@ namespace ProyectoFdiV3.Migrations
                         .WithMany("Competencia")
                         .HasForeignKey("IdMod");
 
-                    b.HasOne("ProyectoFdiV3.Models.Sede", "CompetenciaSede")
-                        .WithMany("Competencias")
-                        .HasForeignKey("IdSede");
-
                     b.Navigation("CompetenciaSede");
 
                     b.Navigation("IdCatNavigation");
@@ -588,7 +593,7 @@ namespace ProyectoFdiV3.Migrations
 
             modelBuilder.Entity("ProyectoFdiV3.Models.Deportistum", b =>
                 {
-                    b.HasOne("ProyectoFdiV3.Models.Club", "DeportistaClub")
+                    b.HasOne("ProyectoFdiV3.Models.Club", "IdClubNavigation")
                         .WithMany("Deportista")
                         .HasForeignKey("IdClub");
 
@@ -608,7 +613,7 @@ namespace ProyectoFdiV3.Migrations
                         .WithMany()
                         .HasForeignKey("IdUsuNavigationIdUsu");
 
-                    b.Navigation("DeportistaClub");
+                    b.Navigation("IdClubNavigation");
 
                     b.Navigation("IdEntNavigation");
 

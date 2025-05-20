@@ -209,8 +209,10 @@ public class CompetenciumController : ControllerBase
         var competencia = await _context.Competencias
             .Include(c => c.CompetenciaDeportistas)
                 .ThenInclude(cd => cd.Deportista)
+                .ThenInclude(dd => dd.DeportistaClub)
             .Include(c => c.RegistrosResultados)
                 .ThenInclude(rr => rr.Deportista)
+            .Include(c=>c.CompetenciaSede)
             .FirstOrDefaultAsync(c => c.IdCom == id);
 
         if (competencia == null)
@@ -220,6 +222,22 @@ public class CompetenciumController : ControllerBase
 
         // Leer la plantilla HTML desde un archivo externo
         string templatePath = Path.Combine(_webHostEnvironment.ContentRootPath, "Templates", "CompetenciaVelocidad.cshtml");
+        if (competencia.IdMod==2)
+        {
+            templatePath = Path.Combine(_webHostEnvironment.ContentRootPath, "Templates", "CompetenciaBloque.cshtml");
+        }
+
+        if (competencia.IdMod == 3)
+        {
+            templatePath = Path.Combine(_webHostEnvironment.ContentRootPath, "Templates", "CompetenciaVias.cshtml");
+        }
+
+        if (competencia.IdMod == 4)
+        {
+            templatePath = Path.Combine(_webHostEnvironment.ContentRootPath, "Templates", "CompetenciaCombinada.cshtml");
+        }
+
+
         string template = await System.IO.File.ReadAllTextAsync(templatePath);
 
         // Renderizar la plantilla con los datos de la competencia

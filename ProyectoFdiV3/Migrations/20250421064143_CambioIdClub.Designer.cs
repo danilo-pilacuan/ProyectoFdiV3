@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProyectoFdiV3.Models;
 
@@ -11,9 +12,10 @@ using ProyectoFdiV3.Models;
 namespace ProyectoFdiV3.Migrations
 {
     [DbContext(typeof(ProyectoFdiV3DbContext))]
-    partial class ProyectoFdiV3DbContextModelSnapshot : ModelSnapshot
+    [Migration("20250421064143_CambioIdClub")]
+    partial class CambioIdClub
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -588,7 +590,7 @@ namespace ProyectoFdiV3.Migrations
 
             modelBuilder.Entity("ProyectoFdiV3.Models.Deportistum", b =>
                 {
-                    b.HasOne("ProyectoFdiV3.Models.Club", "DeportistaClub")
+                    b.HasOne("ProyectoFdiV3.Models.Club", "IdClubNavigation")
                         .WithMany("Deportista")
                         .HasForeignKey("IdClub");
 
@@ -608,7 +610,7 @@ namespace ProyectoFdiV3.Migrations
                         .WithMany()
                         .HasForeignKey("IdUsuNavigationIdUsu");
 
-                    b.Navigation("DeportistaClub");
+                    b.Navigation("IdClubNavigation");
 
                     b.Navigation("IdEntNavigation");
 
