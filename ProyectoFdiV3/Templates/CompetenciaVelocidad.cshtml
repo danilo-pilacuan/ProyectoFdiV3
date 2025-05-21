@@ -1182,6 +1182,77 @@
                 </tbody>
                 </table>
         </section>
+        @using System.Text.Json;
+
+        @{
+            float MinNullable(float? a, float? b)
+{
+    if (!a.HasValue && !b.HasValue) return float.MaxValue; // ambos null
+    if (!a.HasValue) return b.Value;
+    if (!b.HasValue) return a.Value;
+    return Math.Min(a.Value, b.Value);
+}
+
+            var registrosOrdenados = Model.RegistrosResultados
+            .OrderByDescending(r => r.Etapa)
+            .ThenBy(r =>
+            (!r.Tiempo1.HasValue && !r.Tiempo2.HasValue) ? float.MaxValue :
+            (!r.Tiempo1.HasValue) ? r.Tiempo2.Value :
+            (!r.Tiempo2.HasValue) ? r.Tiempo1.Value :
+            Math.Min(r.Tiempo1.Value, r.Tiempo2.Value)
+            )
+            .GroupBy(r => r.IdDep)
+            .Select(g => g.First())
+            .Select((r, index) =>
+            {
+                r.Orden = index + 1; // Asigna orden comenzando desde 1
+                return r;
+            })
+            .ToList();
+
+
+
+            // var opciones = new JsonSerializerOptions
+            // {
+            //     MaxDepth = 2,
+            //     WriteIndented = true // opcional, para legibilidad
+            // };
+
+            // string json = JsonSerializer.Serialize(registrosOrdenados, opciones);
+            // Console.WriteLine(json);
+        }
+
+        <section class="etapa-section clasificacion">
+            <h3>Clasificación Final</h3>
+
+            @if (Model.RegistrosResultados != null)
+            {
+                <table class="table-clasificacion" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th>Deportista</th>
+                            <th>Orden Final</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var registro in registrosOrdenados)
+                        {
+                            <tr>
+                                <td style="text-align: center">@registro.Deportista.NombresDep @registro.Deportista.ApellidosDep</td>
+                                <td style="text-align: center">@registro.Orden</td>
+                            </tr>   
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>No hay registros para esta etapa</p>
+            }
+        </section>
+
+
 
         <footer>
             <p>Sistema de Gestión de Competencias Deportivas</p>
