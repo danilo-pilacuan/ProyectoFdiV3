@@ -142,7 +142,7 @@ namespace ProyectoFdiV3.Controllers
         [HttpPut("updatevias")]
         public async Task<IActionResult> UpdateParaVias([FromBody] UpdateParaViasRequest request)
         {
-            var registroResultado = await _context.RegistroResultados.FindAsync(request.IdRegistroResultado);
+            var registroResultado = _context.RegistroResultados.Include(r => r.Competencia).FirstOrDefault(r => r.IdRegistroResultado == request.IdRegistroResultado);
 
             if (registroResultado == null)
             {
@@ -165,11 +165,11 @@ namespace ProyectoFdiV3.Controllers
             //registroResultado.MaxEscala2 = float.TryParse(request.MaxEscala2, out var maxEscala2) ? maxEscala2 : (float?)null;
 
             registroResultado.MaxEscala1 = request.MaxEscala1 == "TOP"
-                ? registroResultado.MaxPresas1 + 1
+                ? registroResultado.Competencia.NumPresasR1ClasifVias + 1
                 : float.Parse(request.MaxEscala1);
 
             registroResultado.MaxEscala2 = request.MaxEscala2 == "TOP"
-                ? registroResultado.MaxPresas2 + 1
+                ? registroResultado.Competencia.NumPresasR2ClasifVias + 1
                 : float.Parse(request.MaxEscala2);
 
             registroResultado.LabelMaxEscala1 = labelME1;
@@ -185,6 +185,7 @@ namespace ProyectoFdiV3.Controllers
             registroResultado.RegistroCompleto = true;
 
             registroResultado.Tiempo1 = request.Tiempo1;
+            registroResultado.Tiempo2 = request.Tiempo2;
 
             _context.Entry(registroResultado).State = EntityState.Modified;
 
@@ -701,14 +702,17 @@ namespace ProyectoFdiV3.Controllers
             }
 
             int numClasif= request.NumeroClasificados;
+            int numClasifAux= request.NumeroClasificados;
 
-            if (registrosActuales[numClasif - 1].TotalTops == registrosActuales[numClasif].TotalTops
-                && registrosActuales[numClasif - 1].TotalZonas == registrosActuales[numClasif].TotalZonas
-                && registrosActuales[numClasif - 1].IntentosTops == registrosActuales[numClasif].IntentosTops
-                && registrosActuales[numClasif - 1].IntentosZonas == registrosActuales[numClasif].IntentosZonas
+            for(int i = 0; i < registrosActuales.Count; i++)
+            {if (registrosActuales[numClasifAux - 1].TotalTops == registrosActuales[i].TotalTops
+                && registrosActuales[numClasifAux - 1].TotalZonas == registrosActuales[i].TotalZonas
+                && registrosActuales[numClasifAux - 1].IntentosTops == registrosActuales[i].IntentosTops
+                && registrosActuales[numClasifAux - 1].IntentosZonas == registrosActuales[i].IntentosZonas
                 )
-            {
-                numClasif = numClasif + 1;
+                {
+                    numClasif = numClasif + 1;
+                }
             }
 
             // Tomar solo los primeros 'NumeroClasificados'
@@ -753,10 +757,21 @@ namespace ProyectoFdiV3.Controllers
                 return BadRequest(new { message = "No se encontraron registros para la etapa actual." });
             }
             int numClasif = request.NumeroClasificados;
-            if (registrosActuales[numClasif - 1].PuntajeFinalVia== registrosActuales[numClasif].PuntajeFinalVia)
+            int numClasifAux = request.NumeroClasificados;
+
+            for(int i = numClasif; i < registrosActuales.Count; i++)
             {
-                numClasif = numClasif + 1;
+                if (registrosActuales[numClasifAux - 1].PuntajeFinalVia == registrosActuales[i].PuntajeFinalVia)
+                {
+                    numClasif = numClasif + 1;
+                }
+                else
+                {
+                    break;
+                }
             }
+
+            
 
             // Tomar solo los primeros 'NumeroClasificados'
             var clasificados = registrosActuales.Take(numClasif).ToList();
@@ -870,6 +885,7 @@ namespace ProyectoFdiV3.Controllers
 
 
 
+
         [HttpPost("CalcularOrdenVias")]
         public async Task<ActionResult<IEnumerable<object>>> CalcularOrdenVias([FromBody] ClasificacionRequest request)
         {
@@ -882,7 +898,7 @@ namespace ProyectoFdiV3.Controllers
                 .Where(r => r.IdCom == request.IdCompetencia && r.Etapa == request.Etapa)
                 .ToListAsync();
 
-            
+
             var maxEscala1Unicos = registrosCompetidores.Select(r => r.MaxEscala1)    // Seleccionamos solo la propiedad MaxEscala1
                 .Distinct()                   // Obtenemos los valores únicos
                 .OrderByDescending(valor => valor)
@@ -930,35 +946,63 @@ namespace ProyectoFdiV3.Controllers
             .Select(competidor => new
             {
                 competidor,
-                PuntajeFinalVia =Math.Sqrt((double)(competidor.RankingVia1 * competidor.RankingVia2))
+                PuntajeFinalVia = Math.Sqrt((double)(competidor.RankingVia1 * competidor.RankingVia2))
             })
             .OrderBy(c => c.PuntajeFinalVia)  // Ordenar por puntaje final combinado (menor es mejor)
-            .ThenBy(c=>c.competidor.Tiempo1)
+            .ThenBy(c => c.competidor.Tiempo1)  // Desempate por tiempo1
+            .ThenBy(c => c.competidor.Tiempo2)  // Segundo desempate por tiempo2
             .ToList();
 
-            // Asignación de posiciones
-            var resultadoFinal = competidoresOrdenados
-                .Select((item, index) => new
-                {
-                    item.competidor.IdRegistroResultado,
-                    item.competidor.IdDep,
-                    item.PuntajeFinalVia,
-                    item.competidor.RankingVia1,
-                    item.competidor.RankingVia2,
-                    Puesto = index + 1  // Índice base 0, se suma 1 para que empiece en 1
-                })
-                .ToList();
+            // Asignación de posiciones con manejo de empates
+            var resultadoFinal = new List<object>();
+            int posicionActual = 1;
 
+            for (int i = 0; i < competidoresOrdenados.Count; i++)
+            {
+                var competidorActual = competidoresOrdenados[i];
+
+                // Si no es el primer competidor, verificar si hay empate con el anterior
+                if (i > 0)
+                {
+                    var competidorAnterior = competidoresOrdenados[i - 1];
+
+                    // Verificar empate completo: mismo puntaje, mismo tiempo1 y mismo tiempo2
+                    bool mismoRanking = Math.Abs(competidorActual.PuntajeFinalVia - competidorAnterior.PuntajeFinalVia) <= 0.0001 &&
+                                       competidorActual.competidor.Tiempo1 == competidorAnterior.competidor.Tiempo1 &&
+                                       competidorActual.competidor.Tiempo2 == competidorAnterior.competidor.Tiempo2;
+
+                    // Si no hay empate completo, actualizar la posición
+                    if (!mismoRanking)
+                    {
+                        posicionActual = i + 1; // La nueva posición es el índice + 1
+                    }
+                    // Si hay empate completo, mantener la misma posición
+                }
+
+                resultadoFinal.Add(new
+                {
+                    competidorActual.competidor.IdRegistroResultado,
+                    competidorActual.competidor.IdDep,
+                    competidorActual.PuntajeFinalVia,
+                    competidorActual.competidor.RankingVia1,
+                    competidorActual.competidor.RankingVia2,
+                    competidorActual.competidor.Tiempo1,
+                    competidorActual.competidor.Tiempo2,
+                    Puesto = posicionActual
+                });
+            }
+
+            // Actualizar los registros en la base de datos
             foreach (var item in resultadoFinal)
             {
-                var registro = registrosCompetidores.FirstOrDefault(r => r.IdRegistroResultado == item.IdRegistroResultado);
+                var registro = registrosCompetidores.FirstOrDefault(r => r.IdRegistroResultado == (int)item.GetType().GetProperty("IdRegistroResultado").GetValue(item));
                 if (registro != null)
                 {
                     // Guardamos el puntaje final
-                    registro.RankingVia1 = item.RankingVia1;
-                    registro.RankingVia2 = item.RankingVia2;
-                    registro.PuntajeFinalVia = item.PuntajeFinalVia;
-                    registro.Orden = item.Puesto;
+                    registro.RankingVia1 = (int)item.GetType().GetProperty("RankingVia1").GetValue(item);
+                    registro.RankingVia2 = (int)item.GetType().GetProperty("RankingVia2").GetValue(item);
+                    registro.PuntajeFinalVia = (double)item.GetType().GetProperty("PuntajeFinalVia").GetValue(item);
+                    registro.Orden = (int)item.GetType().GetProperty("Puesto").GetValue(item);
                 }
             }
 
@@ -967,8 +1011,6 @@ namespace ProyectoFdiV3.Controllers
 
             return Ok(resultadoFinal);
         }
-
-
 
 
         private bool RegistroResultadoExists(int id)
@@ -1031,6 +1073,8 @@ namespace ProyectoFdiV3.Controllers
         public string MaxEscala1 { get; set; }
         public string MaxEscala2 { get; set; }
         public float Tiempo1 { get; set; }
+        public float Tiempo2 { get; set; }
+    
     }
     public class UpdateParaViasCombRequest
     {

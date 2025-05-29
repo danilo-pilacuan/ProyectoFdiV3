@@ -30,7 +30,7 @@ namespace ProyectoFdiV3.Models
         {
             modelBuilder.Entity<Club>()
                 .HasMany(c => c.Deportista)
-                .WithOne(d => d.DeportistaClub)
+                .WithOne(d => d.Club)
                 .HasForeignKey(d => d.IdClub);
 
             modelBuilder.Entity<Competencium>()
@@ -44,12 +44,12 @@ namespace ProyectoFdiV3.Models
                 .HasForeignKey(c => c.IdMod);
 
             modelBuilder.Entity<Deportistum>()
-                .HasOne(d => d.DeportistaClub)
+                .HasOne(d => d.Club)
                 .WithMany(c => c.Deportista)
                 .HasForeignKey(d => d.IdClub);
 
             modelBuilder.Entity<Deportistum>()
-                .HasOne(d => d.IdEntNavigation)
+                .HasOne(d => d.Entrenador)
                 .WithMany(e => e.Deportista)
                 .HasForeignKey(d => d.IdEnt);
 

@@ -209,7 +209,7 @@ public class CompetenciumController : ControllerBase
         var competencia = await _context.Competencias
             .Include(c => c.CompetenciaDeportistas)
                 .ThenInclude(cd => cd.Deportista)
-                .ThenInclude(dd => dd.DeportistaClub)
+                .ThenInclude(dd => dd.Club)
             .Include(c => c.RegistrosResultados)
                 .ThenInclude(rr => rr.Deportista)
             .Include(c=>c.CompetenciaSede)

@@ -41,11 +41,7 @@ public class DeportistumController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> PutDeportistum(int id, Deportistum deportistum)
     {
-        if (id != deportistum.IdDep)
-        {
-            return BadRequest();
-        }
-
+        
         _context.Entry(deportistum).State = EntityState.Modified;
         try
         {
@@ -63,7 +59,7 @@ public class DeportistumController : ControllerBase
             }
         }
 
-        return NoContent();
+        return Ok();
     }
 
     [HttpDelete("{id}")]
