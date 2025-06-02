@@ -491,18 +491,58 @@ namespace ProyectoFdiV3.Controllers
                 .ToList();
 
             // Asignación de posiciones
-            var resultadoFinal = competidoresOrdenados
-                .Select((item, index) => new
+            var competidoresConPuntaje = competidoresOrdenados
+    .Select(item => new
+    {
+        item.competidor.IdRegistroResultado,
+        item.competidor.IdDep,
+        item.TotalTops,
+        item.TotalZonas,
+        item.IntentosTops,
+        item.IntentosZonas,
+        PuntajeCombinadaBloque = (item.TotalTops * 10000) + (item.TotalZonas * 100) - (item.IntentosTops * 10) - item.IntentosZonas
+    })
+    .OrderByDescending(x => x.PuntajeCombinadaBloque)
+    .ToList();
+
+            // Asignar puesto considerando empates en puntaje
+            var resultadoFinal = new List<dynamic>();
+            int puestoActual = 1;
+            int contador = 1;
+            int? puntajeAnterior = null;
+
+            foreach (var item in competidoresConPuntaje)
+            {
+                int puestoAsignado;
+
+                if (puntajeAnterior.HasValue && item.PuntajeCombinadaBloque == puntajeAnterior.Value)
                 {
-                    item.competidor.IdRegistroResultado,
-                    item.competidor.IdDep,
+                    // Mismo puntaje que el anterior → mismo puesto
+                    puestoAsignado = puestoActual;
+                }
+                else
+                {
+                    // Nuevo puntaje distinto → actualizar puesto actual
+                    puestoActual = contador;
+                    puestoAsignado = puestoActual;
+                }
+
+                resultadoFinal.Add(new
+                {
+                    item.IdRegistroResultado,
+                    item.IdDep,
                     item.TotalTops,
                     item.TotalZonas,
                     item.IntentosTops,
                     item.IntentosZonas,
-                    Puesto = index + 1 // Índice base 0, se suma 1 para que empiece en 1
-                })
-                .ToList();
+                    PuntajeCombinadaBloque = item.PuntajeCombinadaBloque,
+                    Puesto = puestoAsignado
+                });
+
+                puntajeAnterior = item.PuntajeCombinadaBloque;
+                contador++;
+            }
+
 
             foreach (var item in resultadoFinal)
             {
@@ -515,6 +555,7 @@ namespace ProyectoFdiV3.Controllers
                     registro.TotalZonas = item.TotalZonas;
                     registro.IntentosTops = item.IntentosTops;
                     registro.IntentosZonas = item.IntentosZonas;
+                    registro.PuntajeCombinadaBloque = item.PuntajeCombinadaBloque;
                 }
             }
 

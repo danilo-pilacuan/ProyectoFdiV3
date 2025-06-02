@@ -37,6 +37,12 @@ public class CompetenciumController : ControllerBase
         return await _context.Competencias.ToListAsync();
     }
 
+    [HttpGet("activas")]
+    public async Task<ActionResult<IEnumerable<Competencium>>> GetCompetenciasActivas()
+    {
+        return await _context.Competencias.Where(c => c.ActivoCom.HasValue && c.ActivoCom.Value).ToListAsync();
+    }
+
     // GET: api/competencium/5
     [HttpGet("{id}")]
     public async Task<ActionResult<Competencium>> GetCompetencium(int id)
@@ -100,7 +106,7 @@ public class CompetenciumController : ControllerBase
         return NoContent();
     }
 
-    [HttpPut("desactivar/{id}")]
+    [HttpGet("desactivar/{id}")]
     public async Task<IActionResult> DesactivarCompetencia(int id)
     {
         var competencia = await _context.Competencias.FindAsync(id);
@@ -129,7 +135,7 @@ public class CompetenciumController : ControllerBase
             }
         }
 
-        return NoContent();
+        return Ok();
     }
 
     [HttpPatch("actualizar-num-presas/{id}")]
