@@ -48,12 +48,16 @@ public class ClubController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> PutClub(int id, Club club)
     {
-        if (id != club.IdClub)
+        var clubExistente = await _context.Clubs.FindAsync(id);
+
+        if (clubExistente == null)
         {
-            return BadRequest();
+            return NotFound();
         }
 
-        _context.Entry(club).State = EntityState.Modified;
+        clubExistente.NombreClub = club.NombreClub ?? clubExistente.NombreClub;
+
+        
 
         try
         {
@@ -71,7 +75,7 @@ public class ClubController : ControllerBase
             }
         }
 
-        return NoContent();
+        return Ok();
     }
 
     // DELETE: api/club/5

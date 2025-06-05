@@ -14,19 +14,72 @@ public class EntrenadorController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Entrenador>>> GetEntrenadores()
+    public async Task<ActionResult<IEnumerable<object>>> GetEntrenadores()
     {
-        return await _context.Entrenadores.ToListAsync();
+        return await _context.Entrenadores
+            .AsNoTracking()
+            .Include(e => e.IdProNavigation)
+            .Include(e => e.IdUsuNavigation)
+            .Select(e => new
+            {
+                // Propiedades del entrenador
+                e.IdEnt,
+                e.NombresEnt,
+                e.ApellidosEnt,
+                e.CedulaEnt,
+                e.ActivoEnt,
+                e.IdPro,
+
+                // Relaciones (solo propiedades necesarias)
+                Provincia = e.IdProNavigation != null ? new
+                {
+                    e.IdProNavigation.IdPro,
+                    e.IdProNavigation.NombrePro
+                } : null,
+                Usuario = e.IdUsuNavigation != null ? new
+                {
+                    e.IdUsuNavigation.IdUsu,
+                    e.IdUsuNavigation.NombreUsu
+                } : null
+            })
+            .ToListAsync();
     }
 
+
     [HttpGet("{id}")]
-    public async Task<ActionResult<Entrenador>> GetEntrenador(int id)
+    public async Task<ActionResult<object>> GetEntrenador(int id)
     {
-        var entrenador = await _context.Entrenadores.FindAsync(id);
+        var entrenador = await _context.Entrenadores
+            .AsNoTracking()
+            .Include(e => e.IdProNavigation)
+            .Include(e => e.IdUsuNavigation)
+            .Where(e => e.IdEnt == id)
+            .Select(e => new
+            {
+                e.IdEnt,
+                e.NombresEnt,
+                e.ApellidosEnt,
+                e.CedulaEnt,
+                e.ActivoEnt,
+                e.IdPro,
+                Provincia = e.IdProNavigation != null ? new
+                {
+                    e.IdProNavigation.IdPro,
+                    e.IdProNavigation.NombrePro
+                } : null,
+                Usuario = e.IdUsuNavigation != null ? new
+                {
+                    e.IdUsuNavigation.IdUsu,
+                    e.IdUsuNavigation.NombreUsu
+                } : null
+            })
+            .FirstOrDefaultAsync();
+
         if (entrenador == null)
         {
             return NotFound();
         }
+
         return entrenador;
     }
 
@@ -39,14 +92,25 @@ public class EntrenadorController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutEntrenador(int id, Entrenador entrenador)
+    public async Task<IActionResult> PutEntrenador(int id, [FromBody] Entrenador entrenador)
     {
-        if (id != entrenador.IdEnt)
+    
+        // Buscar el entrenador existente en la base de datos
+        var entrenadorExistente = await _context.Entrenadores.FindAsync(id);
+
+        if (entrenadorExistente == null)
         {
-            return BadRequest();
+            return NotFound();
         }
 
-        _context.Entry(entrenador).State = EntityState.Modified;
+        // Actualizar solo los campos específicos
+        entrenadorExistente.NombresEnt = entrenador.NombresEnt;
+        entrenadorExistente.ApellidosEnt = entrenador.ApellidosEnt;
+        entrenadorExistente.CedulaEnt = entrenador.CedulaEnt;
+        //entrenadorExistente.ActivoEnt = entrenador.ActivoEnt;
+        entrenadorExistente.IdPro = entrenador.IdPro;
+        
+
         try
         {
             await _context.SaveChangesAsync();
@@ -63,8 +127,41 @@ public class EntrenadorController : ControllerBase
             }
         }
 
-        return NoContent();
+        return Ok();
     }
+    [HttpPut("deshabilitar/{id}")]
+    public async Task<IActionResult> DeshabilitarEntrenador(int id, Entrenador entrenador)
+    {
+        // Buscar el entrenador en la base de datos
+        var entrenadorExistente = await _context.Entrenadores.FindAsync(id);
+
+        if (entrenadorExistente == null)
+        {
+            return NotFound();
+        }
+
+        // Deshabilitar el entrenador (asumiendo que ActivoEnt es un campo booleano)
+        entrenadorExistente.ActivoEnt = false;
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!EntrenadorExists(id))
+            {
+                return NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        return Ok();
+    }
+
 
     [HttpDelete("{id}")]
     public async Task<ActionResult<Entrenador>> DeleteEntrenador(int id)

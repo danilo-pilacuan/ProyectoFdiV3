@@ -64,6 +64,23 @@ public class CompetenciumController : ControllerBase
         return competencium;
     }
 
+    [HttpGet("sede/{idSede}")]
+    public async Task<ActionResult<IEnumerable<Competencium>>> GetCompetenciasPorSede(int idSede)
+    {
+        var competencias = await _context.Competencias
+            .Include(c => c.CompetenciaDeportistas)
+                .ThenInclude(cd => cd.Deportista)
+                    .ThenInclude(d => d.RegistrosResultados)
+            .Where(c => c.IdSede == idSede)
+            .ToListAsync();
+
+        if (competencias == null || !competencias.Any())
+        {
+            return NotFound();
+        }
+
+        return competencias;
+    }
 
 
     // POST: api/competencium

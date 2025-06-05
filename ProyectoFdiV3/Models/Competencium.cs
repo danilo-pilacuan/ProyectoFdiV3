@@ -29,6 +29,9 @@ public partial class Competencium
 
     public int? NumPresas {get; set;}
 
+    public int? IdCatNavigationIdCat { get; set; }
+
+
     public int? NumPresasR1ClasifVias { get; set; }
     public int? NumPresasR2ClasifVias { get; set; }
     public int? NumPresasR1FinalVias { get; set; }
@@ -39,6 +42,7 @@ public partial class Competencium
 
 
 
+    [ForeignKey("IdCatNavigationIdCat")]
 
     public virtual Categorium? IdCatNavigation { get; set; }
 

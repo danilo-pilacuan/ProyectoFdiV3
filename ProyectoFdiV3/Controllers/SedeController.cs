@@ -53,13 +53,16 @@ namespace ProyectoFdiV3.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSede(int id, Sede sede)
         {
-            if (id != sede.IdSede)
+            var sedeExistente = await _context.Sedes.FindAsync(id);
+
+            if (sedeExistente == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(sede).State = EntityState.Modified;
-
+            // Actualizar solo los campos necesarios, si vienen con valor
+            sedeExistente.NombreSede = sede.NombreSede ?? sedeExistente.NombreSede;
+            
             try
             {
                 await _context.SaveChangesAsync();
@@ -76,7 +79,7 @@ namespace ProyectoFdiV3.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok();
         }
 
         // DELETE: api/Sede/5
