@@ -4,21 +4,22 @@
 
 namespace ProyectoFdiV3.Migrations
 {
-    public partial class UpdateRegistros11 : Migration
+    public partial class FinalMig2 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "IdMod",
+            migrationBuilder.AddColumn<float>(
+                name: "PuntajePrevio",
                 table: "RegistroResultados",
-                type: "int",
-                nullable: true);
+                type: "real",
+                nullable: false,
+                defaultValue: 0f);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "IdMod",
+                name: "PuntajePrevio",
                 table: "RegistroResultados");
         }
     }

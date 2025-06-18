@@ -240,9 +240,6 @@ namespace ProyectoFdiV3.Migrations
                     b.Property<int?>("IdPro")
                         .HasColumnType("int");
 
-                    b.Property<int?>("IdProNavigationIdPro")
-                        .HasColumnType("int");
-
                     b.Property<int?>("IdUsuNavigationIdUsu")
                         .HasColumnType("int");
 
@@ -251,7 +248,7 @@ namespace ProyectoFdiV3.Migrations
 
                     b.HasKey("IdEnt");
 
-                    b.HasIndex("IdProNavigationIdPro");
+                    b.HasIndex("IdPro");
 
                     b.HasIndex("IdUsuNavigationIdUsu");
 
@@ -294,9 +291,6 @@ namespace ProyectoFdiV3.Migrations
                     b.Property<int?>("IdPro")
                         .HasColumnType("int");
 
-                    b.Property<int?>("IdProNavigationIdPro")
-                        .HasColumnType("int");
-
                     b.Property<int?>("IdUsuNavigationIdUsu")
                         .HasColumnType("int");
 
@@ -308,7 +302,7 @@ namespace ProyectoFdiV3.Migrations
 
                     b.HasKey("IdJuez");
 
-                    b.HasIndex("IdProNavigationIdPro");
+                    b.HasIndex("IdPro");
 
                     b.HasIndex("IdUsuNavigationIdUsu");
 
@@ -411,6 +405,11 @@ namespace ProyectoFdiV3.Migrations
 
                     b.Property<double>("PuntajeFinalVia")
                         .HasColumnType("float");
+
+                    b.Property<float?>("PuntajePrevio")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("real")
+                        .HasDefaultValue(0f);
 
                     b.Property<int?>("RankingVia1")
                         .HasColumnType("int");
@@ -629,7 +628,7 @@ namespace ProyectoFdiV3.Migrations
                 {
                     b.HasOne("ProyectoFdiV3.Models.Provincium", "IdProNavigation")
                         .WithMany()
-                        .HasForeignKey("IdProNavigationIdPro");
+                        .HasForeignKey("IdPro");
 
                     b.HasOne("ProyectoFdiV3.Models.Usuario", "IdUsuNavigation")
                         .WithMany()
@@ -644,7 +643,7 @@ namespace ProyectoFdiV3.Migrations
                 {
                     b.HasOne("ProyectoFdiV3.Models.Provincium", "IdProNavigation")
                         .WithMany()
-                        .HasForeignKey("IdProNavigationIdPro");
+                        .HasForeignKey("IdPro");
 
                     b.HasOne("ProyectoFdiV3.Models.Usuario", "IdUsuNavigation")
                         .WithMany()

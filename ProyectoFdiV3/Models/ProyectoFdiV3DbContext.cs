@@ -63,6 +63,10 @@ namespace ProyectoFdiV3.Models
                 .HasOne(r => r.Competencia)
                 .WithMany(c => c.RegistrosResultados) // Asumiendo que en Competencium tienes una colección de RegistroResultado
                 .HasForeignKey(r => r.IdCom); // Cambié a IdCom para coincidir con la propiedad en tu modelo
+
+            modelBuilder.Entity<RegistroResultado>()
+                .Property(r => r.PuntajePrevio)
+                .HasDefaultValue(0.0f);
         }
     }
 }

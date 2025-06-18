@@ -75,5 +75,7 @@ namespace ProyectoFdiV3.Models
 
         public bool SalidaFalse { get; set; }
 
+        public float? PuntajePrevio { get; set; }
+
     }
 }

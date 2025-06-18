@@ -482,7 +482,8 @@ namespace ProyectoFdiV3.Controllers
                     TotalZonas = new[] { competidor.ZonaB1, competidor.ZonaB2, competidor.ZonaB3, competidor.ZonaB4 }
                                     .Count(zona => zona > 0),
                     IntentosTops = competidor.TopB1 + competidor.TopB2 + competidor.TopB3 + competidor.TopB4,
-                    IntentosZonas = competidor.ZonaB1 + competidor.ZonaB2 + competidor.ZonaB3 + competidor.ZonaB4
+                    IntentosZonas = competidor.ZonaB1 + competidor.ZonaB2 + competidor.ZonaB3 + competidor.ZonaB4,
+                    PuntajePrevio = competidor.PuntajePrevio
                 })
                 .OrderByDescending(c => c.TotalTops)
                 .ThenByDescending(c => c.TotalZonas)
@@ -500,7 +501,8 @@ namespace ProyectoFdiV3.Controllers
         item.TotalZonas,
         item.IntentosTops,
         item.IntentosZonas,
-        PuntajeCombinadaBloque = (item.TotalTops * 10000) + (item.TotalZonas * 100) - (item.IntentosTops * 10) - item.IntentosZonas
+        item.PuntajePrevio,
+        PuntajeCombinadaBloque = ((int?)item.PuntajePrevio)+(item.TotalTops * 10000) + (item.TotalZonas * 100) - (item.IntentosTops * 10) - item.IntentosZonas
     })
     .OrderByDescending(x => x.PuntajeCombinadaBloque)
     .ToList();
@@ -842,7 +844,9 @@ namespace ProyectoFdiV3.Controllers
                     MaxPresas2 = registro.MaxPresas2,
                     LabelMaxEscala1 = "0",
                     LabelMaxEscala2 = "0",
-                    IdMod= registro.IdMod
+                    IdMod= registro.IdMod,
+                    PuntajePrevio= 100-registro.Orden
+                    
                     // Agregar otros valores necesarios
                 };
 
@@ -992,6 +996,7 @@ namespace ProyectoFdiV3.Controllers
             .OrderBy(c => c.PuntajeFinalVia)  // Ordenar por puntaje final combinado (menor es mejor)
             .ThenBy(c => c.competidor.Tiempo1)  // Desempate por tiempo1
             .ThenBy(c => c.competidor.Tiempo2)  // Segundo desempate por tiempo2
+            .ThenByDescending(c => c.competidor.PuntajePrevio) 
             .ToList();
 
             // Asignación de posiciones con manejo de empates
@@ -1010,7 +1015,9 @@ namespace ProyectoFdiV3.Controllers
                     // Verificar empate completo: mismo puntaje, mismo tiempo1 y mismo tiempo2
                     bool mismoRanking = Math.Abs(competidorActual.PuntajeFinalVia - competidorAnterior.PuntajeFinalVia) <= 0.0001 &&
                                        competidorActual.competidor.Tiempo1 == competidorAnterior.competidor.Tiempo1 &&
-                                       competidorActual.competidor.Tiempo2 == competidorAnterior.competidor.Tiempo2;
+                                       competidorActual.competidor.Tiempo2 == competidorAnterior.competidor.Tiempo2 &&
+                                       competidorActual.competidor.PuntajePrevio == competidorAnterior.competidor.PuntajePrevio
+                                       ;
 
                     // Si no hay empate completo, actualizar la posición
                     if (!mismoRanking)

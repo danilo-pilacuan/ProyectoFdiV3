@@ -12,8 +12,8 @@ using ProyectoFdiV3.Models;
 namespace ProyectoFdiV3.Migrations
 {
     [DbContext(typeof(ProyectoFdiV3DbContext))]
-    [Migration("20250212110234_AddPropsRegistroResultado")]
-    partial class AddPropsRegistroResultado
+    [Migration("20250617113833_FinalMig2")]
+    partial class FinalMig2
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -108,11 +108,23 @@ namespace ProyectoFdiV3.Migrations
                     b.Property<int?>("IdSede")
                         .HasColumnType("int");
 
-                    b.Property<int?>("IdSedeNavigationIdSede")
-                        .HasColumnType("int");
-
                     b.Property<string>("NombreCom")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("NumPresas")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("NumPresasR1ClasifVias")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("NumPresasR1FinalVias")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("NumPresasR2ClasifVias")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("NumPresasR2FinalVias")
+                        .HasColumnType("int");
 
                     b.HasKey("IdCom");
 
@@ -122,7 +134,7 @@ namespace ProyectoFdiV3.Migrations
 
                     b.HasIndex("IdMod");
 
-                    b.HasIndex("IdSedeNavigationIdSede");
+                    b.HasIndex("IdSede");
 
                     b.ToTable("Competencias");
                 });
@@ -153,13 +165,10 @@ namespace ProyectoFdiV3.Migrations
                     b.Property<int?>("IdGen")
                         .HasColumnType("int");
 
-                    b.Property<int?>("IdGenNavigationIdGen")
+                    b.Property<int?>("IdProvincia")
                         .HasColumnType("int");
 
-                    b.Property<int?>("IdProNavigationIdPro")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("IdUsuNavigationIdUsu")
+                    b.Property<int?>("IdUsuario")
                         .HasColumnType("int");
 
                     b.Property<string>("NombresDep")
@@ -171,11 +180,11 @@ namespace ProyectoFdiV3.Migrations
 
                     b.HasIndex("IdEnt");
 
-                    b.HasIndex("IdGenNavigationIdGen");
+                    b.HasIndex("IdGen");
 
-                    b.HasIndex("IdProNavigationIdPro");
+                    b.HasIndex("IdProvincia");
 
-                    b.HasIndex("IdUsuNavigationIdUsu");
+                    b.HasIndex("IdUsuario");
 
                     b.ToTable("Deportistas");
                 });
@@ -233,9 +242,6 @@ namespace ProyectoFdiV3.Migrations
                     b.Property<int?>("IdPro")
                         .HasColumnType("int");
 
-                    b.Property<int?>("IdProNavigationIdPro")
-                        .HasColumnType("int");
-
                     b.Property<int?>("IdUsuNavigationIdUsu")
                         .HasColumnType("int");
 
@@ -244,7 +250,7 @@ namespace ProyectoFdiV3.Migrations
 
                     b.HasKey("IdEnt");
 
-                    b.HasIndex("IdProNavigationIdPro");
+                    b.HasIndex("IdPro");
 
                     b.HasIndex("IdUsuNavigationIdUsu");
 
@@ -287,9 +293,6 @@ namespace ProyectoFdiV3.Migrations
                     b.Property<int?>("IdPro")
                         .HasColumnType("int");
 
-                    b.Property<int?>("IdProNavigationIdPro")
-                        .HasColumnType("int");
-
                     b.Property<int?>("IdUsuNavigationIdUsu")
                         .HasColumnType("int");
 
@@ -301,7 +304,7 @@ namespace ProyectoFdiV3.Migrations
 
                     b.HasKey("IdJuez");
 
-                    b.HasIndex("IdProNavigationIdPro");
+                    b.HasIndex("IdPro");
 
                     b.HasIndex("IdUsuNavigationIdUsu");
 
@@ -338,6 +341,155 @@ namespace ProyectoFdiV3.Migrations
                     b.HasKey("IdPro");
 
                     b.ToTable("Provincias");
+                });
+
+            modelBuilder.Entity("ProyectoFdiV3.Models.RegistroResultado", b =>
+                {
+                    b.Property<int>("IdRegistroResultado")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdRegistroResultado"), 1L, 1);
+
+                    b.Property<int?>("Etapa")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("FallRegistro1")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("FallRegistro2")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("IdCom")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdDep")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdMod")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IntentosTops")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IntentosZonas")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IntentosZonasL")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LabelMaxEscala1")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LabelMaxEscala2")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<float?>("MaxEscala1")
+                        .HasColumnType("real");
+
+                    b.Property<float?>("MaxEscala2")
+                        .HasColumnType("real");
+
+                    b.Property<int?>("MaxPresas1")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MaxPresas2")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Orden")
+                        .HasColumnType("int");
+
+                    b.Property<double>("PuntajeCombinadaBloque")
+                        .HasColumnType("float");
+
+                    b.Property<double>("PuntajeCombinadaVia")
+                        .HasColumnType("float");
+
+                    b.Property<double>("PuntajeFinalVia")
+                        .HasColumnType("float");
+
+                    b.Property<float>("PuntajePrevio")
+                        .HasColumnType("real");
+
+                    b.Property<int?>("RankingVia1")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RankingVia2")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("RegistroCompleto")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("RegistroEditadoT1")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("RegistroEditadoT2")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("SalidaFalse")
+                        .HasColumnType("bit");
+
+                    b.Property<float?>("Tiempo1")
+                        .HasColumnType("real");
+
+                    b.Property<float?>("Tiempo2")
+                        .HasColumnType("real");
+
+                    b.Property<int?>("TipoRegistro")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TopB1")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TopB2")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TopB3")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TopB4")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalTops")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalZonas")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalZonasL")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ZonaA1")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ZonaA2")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ZonaA3")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ZonaA4")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ZonaB1")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ZonaB2")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ZonaB3")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ZonaB4")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdRegistroResultado");
+
+                    b.HasIndex("IdCom");
+
+                    b.HasIndex("IdDep");
+
+                    b.ToTable("RegistroResultados");
                 });
 
             modelBuilder.Entity("ProyectoFdiV3.Models.Sede", b =>
@@ -417,50 +569,50 @@ namespace ProyectoFdiV3.Migrations
                         .WithMany("Competencia")
                         .HasForeignKey("IdMod");
 
-                    b.HasOne("ProyectoFdiV3.Models.Sede", "IdSedeNavigation")
+                    b.HasOne("ProyectoFdiV3.Models.Sede", "CompetenciaSede")
                         .WithMany("Competencias")
-                        .HasForeignKey("IdSedeNavigationIdSede");
+                        .HasForeignKey("IdSede");
+
+                    b.Navigation("CompetenciaSede");
 
                     b.Navigation("IdCatNavigation");
 
                     b.Navigation("IdJuezNavigation");
 
                     b.Navigation("IdModNavigation");
-
-                    b.Navigation("IdSedeNavigation");
                 });
 
             modelBuilder.Entity("ProyectoFdiV3.Models.Deportistum", b =>
                 {
-                    b.HasOne("ProyectoFdiV3.Models.Club", "IdClubNavigation")
+                    b.HasOne("ProyectoFdiV3.Models.Club", "Club")
                         .WithMany("Deportista")
                         .HasForeignKey("IdClub");
 
-                    b.HasOne("ProyectoFdiV3.Models.Entrenador", "IdEntNavigation")
+                    b.HasOne("ProyectoFdiV3.Models.Entrenador", "Entrenador")
                         .WithMany("Deportista")
                         .HasForeignKey("IdEnt");
 
-                    b.HasOne("ProyectoFdiV3.Models.Genero", "IdGenNavigation")
+                    b.HasOne("ProyectoFdiV3.Models.Genero", "Genero")
                         .WithMany()
-                        .HasForeignKey("IdGenNavigationIdGen");
+                        .HasForeignKey("IdGen");
 
-                    b.HasOne("ProyectoFdiV3.Models.Provincium", "IdProNavigation")
+                    b.HasOne("ProyectoFdiV3.Models.Provincium", "Provincia")
                         .WithMany()
-                        .HasForeignKey("IdProNavigationIdPro");
+                        .HasForeignKey("IdProvincia");
 
-                    b.HasOne("ProyectoFdiV3.Models.Usuario", "IdUsuNavigation")
+                    b.HasOne("ProyectoFdiV3.Models.Usuario", "Usuario")
                         .WithMany()
-                        .HasForeignKey("IdUsuNavigationIdUsu");
+                        .HasForeignKey("IdUsuario");
 
-                    b.Navigation("IdClubNavigation");
+                    b.Navigation("Club");
 
-                    b.Navigation("IdEntNavigation");
+                    b.Navigation("Entrenador");
 
-                    b.Navigation("IdGenNavigation");
+                    b.Navigation("Genero");
 
-                    b.Navigation("IdProNavigation");
+                    b.Navigation("Provincia");
 
-                    b.Navigation("IdUsuNavigation");
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("ProyectoFdiV3.Models.DetalleCompetencium", b =>
@@ -476,7 +628,7 @@ namespace ProyectoFdiV3.Migrations
                 {
                     b.HasOne("ProyectoFdiV3.Models.Provincium", "IdProNavigation")
                         .WithMany()
-                        .HasForeignKey("IdProNavigationIdPro");
+                        .HasForeignKey("IdPro");
 
                     b.HasOne("ProyectoFdiV3.Models.Usuario", "IdUsuNavigation")
                         .WithMany()
@@ -491,7 +643,7 @@ namespace ProyectoFdiV3.Migrations
                 {
                     b.HasOne("ProyectoFdiV3.Models.Provincium", "IdProNavigation")
                         .WithMany()
-                        .HasForeignKey("IdProNavigationIdPro");
+                        .HasForeignKey("IdPro");
 
                     b.HasOne("ProyectoFdiV3.Models.Usuario", "IdUsuNavigation")
                         .WithMany()
@@ -500,6 +652,21 @@ namespace ProyectoFdiV3.Migrations
                     b.Navigation("IdProNavigation");
 
                     b.Navigation("IdUsuNavigation");
+                });
+
+            modelBuilder.Entity("ProyectoFdiV3.Models.RegistroResultado", b =>
+                {
+                    b.HasOne("ProyectoFdiV3.Models.Competencium", "Competencia")
+                        .WithMany("RegistrosResultados")
+                        .HasForeignKey("IdCom");
+
+                    b.HasOne("ProyectoFdiV3.Models.Deportistum", "Deportista")
+                        .WithMany("RegistrosResultados")
+                        .HasForeignKey("IdDep");
+
+                    b.Navigation("Competencia");
+
+                    b.Navigation("Deportista");
                 });
 
             modelBuilder.Entity("ProyectoFdiV3.Models.Categorium", b =>
@@ -515,6 +682,13 @@ namespace ProyectoFdiV3.Migrations
             modelBuilder.Entity("ProyectoFdiV3.Models.Competencium", b =>
                 {
                     b.Navigation("CompetenciaDeportistas");
+
+                    b.Navigation("RegistrosResultados");
+                });
+
+            modelBuilder.Entity("ProyectoFdiV3.Models.Deportistum", b =>
+                {
+                    b.Navigation("RegistrosResultados");
                 });
 
             modelBuilder.Entity("ProyectoFdiV3.Models.Entrenador", b =>

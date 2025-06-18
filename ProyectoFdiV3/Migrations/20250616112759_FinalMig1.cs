@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ProyectoFdiV3.Migrations
 {
-    public partial class InitialM : Migration
+    public partial class FinalMig1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -115,15 +115,14 @@ namespace ProyectoFdiV3.Migrations
                     CedulaEnt = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ActivoEnt = table.Column<bool>(type: "bit", nullable: true),
                     IdPro = table.Column<int>(type: "int", nullable: true),
-                    IdProNavigationIdPro = table.Column<int>(type: "int", nullable: true),
                     IdUsuNavigationIdUsu = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Entrenadores", x => x.IdEnt);
                     table.ForeignKey(
-                        name: "FK_Entrenadores_Provincias_IdProNavigationIdPro",
-                        column: x => x.IdProNavigationIdPro,
+                        name: "FK_Entrenadores_Provincias_IdPro",
+                        column: x => x.IdPro,
                         principalTable: "Provincias",
                         principalColumn: "IdPro");
                     table.ForeignKey(
@@ -145,15 +144,14 @@ namespace ProyectoFdiV3.Migrations
                     PrincipalJuez = table.Column<bool>(type: "bit", nullable: true),
                     ActivoJuez = table.Column<bool>(type: "bit", nullable: true),
                     IdPro = table.Column<int>(type: "int", nullable: true),
-                    IdProNavigationIdPro = table.Column<int>(type: "int", nullable: true),
                     IdUsuNavigationIdUsu = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Jueces", x => x.IdJuez);
                     table.ForeignKey(
-                        name: "FK_Jueces_Provincias_IdProNavigationIdPro",
-                        column: x => x.IdProNavigationIdPro,
+                        name: "FK_Jueces_Provincias_IdPro",
+                        column: x => x.IdPro,
                         principalTable: "Provincias",
                         principalColumn: "IdPro");
                     table.ForeignKey(
@@ -176,9 +174,8 @@ namespace ProyectoFdiV3.Migrations
                     IdGen = table.Column<int>(type: "int", nullable: true),
                     IdClub = table.Column<int>(type: "int", nullable: true),
                     IdEnt = table.Column<int>(type: "int", nullable: true),
-                    IdGenNavigationIdGen = table.Column<int>(type: "int", nullable: true),
-                    IdProNavigationIdPro = table.Column<int>(type: "int", nullable: true),
-                    IdUsuNavigationIdUsu = table.Column<int>(type: "int", nullable: true)
+                    IdProvincia = table.Column<int>(type: "int", nullable: true),
+                    IdUsuario = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -194,18 +191,18 @@ namespace ProyectoFdiV3.Migrations
                         principalTable: "Entrenadores",
                         principalColumn: "IdEnt");
                     table.ForeignKey(
-                        name: "FK_Deportistas_Generos_IdGenNavigationIdGen",
-                        column: x => x.IdGenNavigationIdGen,
+                        name: "FK_Deportistas_Generos_IdGen",
+                        column: x => x.IdGen,
                         principalTable: "Generos",
                         principalColumn: "IdGen");
                     table.ForeignKey(
-                        name: "FK_Deportistas_Provincias_IdProNavigationIdPro",
-                        column: x => x.IdProNavigationIdPro,
+                        name: "FK_Deportistas_Provincias_IdProvincia",
+                        column: x => x.IdProvincia,
                         principalTable: "Provincias",
                         principalColumn: "IdPro");
                     table.ForeignKey(
-                        name: "FK_Deportistas_Usuarios_IdUsuNavigationIdUsu",
-                        column: x => x.IdUsuNavigationIdUsu,
+                        name: "FK_Deportistas_Usuarios_IdUsuario",
+                        column: x => x.IdUsuario,
                         principalTable: "Usuarios",
                         principalColumn: "IdUsu");
                 });
@@ -223,8 +220,12 @@ namespace ProyectoFdiV3.Migrations
                     IdJuez = table.Column<int>(type: "int", nullable: true),
                     IdSede = table.Column<int>(type: "int", nullable: true),
                     IdMod = table.Column<int>(type: "int", nullable: true),
+                    NumPresas = table.Column<int>(type: "int", nullable: true),
                     IdCatNavigationIdCat = table.Column<int>(type: "int", nullable: true),
-                    IdSedeNavigationIdSede = table.Column<int>(type: "int", nullable: true)
+                    NumPresasR1ClasifVias = table.Column<int>(type: "int", nullable: true),
+                    NumPresasR2ClasifVias = table.Column<int>(type: "int", nullable: true),
+                    NumPresasR1FinalVias = table.Column<int>(type: "int", nullable: true),
+                    NumPresasR2FinalVias = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -245,8 +246,8 @@ namespace ProyectoFdiV3.Migrations
                         principalTable: "Modalidades",
                         principalColumn: "IdMod");
                     table.ForeignKey(
-                        name: "FK_Competencias_Sedes_IdSedeNavigationIdSede",
-                        column: x => x.IdSedeNavigationIdSede,
+                        name: "FK_Competencias_Sedes_IdSede",
+                        column: x => x.IdSede,
                         principalTable: "Sedes",
                         principalColumn: "IdSede");
                 });
@@ -301,37 +302,68 @@ namespace ProyectoFdiV3.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "RegistroResultado",
+                name: "RegistroResultados",
                 columns: table => new
                 {
                     IdRegistroResultado = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    IdDetalleCompetencia = table.Column<int>(type: "int", nullable: true),
                     IdDep = table.Column<int>(type: "int", nullable: true),
-                    Puesto = table.Column<int>(type: "int", nullable: true),
-                    Etapa = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IdDepNavigationIdDep = table.Column<int>(type: "int", nullable: true),
-                    CompetenciumNavigationIdCom = table.Column<int>(type: "int", nullable: true),
-                    DetalleCompetenciumIdDetalle = table.Column<int>(type: "int", nullable: true)
+                    IdCom = table.Column<int>(type: "int", nullable: true),
+                    IdMod = table.Column<int>(type: "int", nullable: true),
+                    Tiempo1 = table.Column<float>(type: "real", nullable: true),
+                    Tiempo2 = table.Column<float>(type: "real", nullable: true),
+                    MaxEscala1 = table.Column<float>(type: "real", nullable: true),
+                    MaxEscala2 = table.Column<float>(type: "real", nullable: true),
+                    LabelMaxEscala1 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LabelMaxEscala2 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TopB1 = table.Column<int>(type: "int", nullable: false),
+                    TopB2 = table.Column<int>(type: "int", nullable: false),
+                    TopB3 = table.Column<int>(type: "int", nullable: false),
+                    TopB4 = table.Column<int>(type: "int", nullable: false),
+                    ZonaB1 = table.Column<int>(type: "int", nullable: false),
+                    ZonaB2 = table.Column<int>(type: "int", nullable: false),
+                    ZonaB3 = table.Column<int>(type: "int", nullable: false),
+                    ZonaB4 = table.Column<int>(type: "int", nullable: false),
+                    ZonaA1 = table.Column<int>(type: "int", nullable: false),
+                    ZonaA2 = table.Column<int>(type: "int", nullable: false),
+                    ZonaA3 = table.Column<int>(type: "int", nullable: false),
+                    ZonaA4 = table.Column<int>(type: "int", nullable: false),
+                    Orden = table.Column<int>(type: "int", nullable: true),
+                    TipoRegistro = table.Column<int>(type: "int", nullable: true),
+                    Etapa = table.Column<int>(type: "int", nullable: true),
+                    RegistroCompleto = table.Column<bool>(type: "bit", nullable: false),
+                    TotalTops = table.Column<int>(type: "int", nullable: false),
+                    TotalZonas = table.Column<int>(type: "int", nullable: false),
+                    TotalZonasL = table.Column<int>(type: "int", nullable: false),
+                    IntentosTops = table.Column<int>(type: "int", nullable: false),
+                    IntentosZonas = table.Column<int>(type: "int", nullable: false),
+                    IntentosZonasL = table.Column<int>(type: "int", nullable: false),
+                    RankingVia1 = table.Column<int>(type: "int", nullable: true),
+                    RankingVia2 = table.Column<int>(type: "int", nullable: true),
+                    PuntajeFinalVia = table.Column<double>(type: "float", nullable: false),
+                    MaxPresas1 = table.Column<int>(type: "int", nullable: true),
+                    MaxPresas2 = table.Column<int>(type: "int", nullable: true),
+                    PuntajeCombinadaVia = table.Column<double>(type: "float", nullable: false),
+                    PuntajeCombinadaBloque = table.Column<double>(type: "float", nullable: false),
+                    RegistroEditadoT1 = table.Column<bool>(type: "bit", nullable: false),
+                    RegistroEditadoT2 = table.Column<bool>(type: "bit", nullable: false),
+                    FallRegistro1 = table.Column<bool>(type: "bit", nullable: false),
+                    FallRegistro2 = table.Column<bool>(type: "bit", nullable: false),
+                    SalidaFalse = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RegistroResultado", x => x.IdRegistroResultado);
+                    table.PrimaryKey("PK_RegistroResultados", x => x.IdRegistroResultado);
                     table.ForeignKey(
-                        name: "FK_RegistroResultado_Competencias_CompetenciumNavigationIdCom",
-                        column: x => x.CompetenciumNavigationIdCom,
+                        name: "FK_RegistroResultados_Competencias_IdCom",
+                        column: x => x.IdCom,
                         principalTable: "Competencias",
                         principalColumn: "IdCom");
                     table.ForeignKey(
-                        name: "FK_RegistroResultado_Deportistas_IdDepNavigationIdDep",
-                        column: x => x.IdDepNavigationIdDep,
+                        name: "FK_RegistroResultados_Deportistas_IdDep",
+                        column: x => x.IdDep,
                         principalTable: "Deportistas",
                         principalColumn: "IdDep");
-                    table.ForeignKey(
-                        name: "FK_RegistroResultado_DetalleCompetencias_DetalleCompetenciumIdDetalle",
-                        column: x => x.DetalleCompetenciumIdDetalle,
-                        principalTable: "DetalleCompetencias",
-                        principalColumn: "IdDetalle");
                 });
 
             migrationBuilder.CreateIndex(
@@ -360,9 +392,9 @@ namespace ProyectoFdiV3.Migrations
                 column: "IdMod");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Competencias_IdSedeNavigationIdSede",
+                name: "IX_Competencias_IdSede",
                 table: "Competencias",
-                column: "IdSedeNavigationIdSede");
+                column: "IdSede");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Deportistas_IdClub",
@@ -375,19 +407,19 @@ namespace ProyectoFdiV3.Migrations
                 column: "IdEnt");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Deportistas_IdGenNavigationIdGen",
+                name: "IX_Deportistas_IdGen",
                 table: "Deportistas",
-                column: "IdGenNavigationIdGen");
+                column: "IdGen");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Deportistas_IdProNavigationIdPro",
+                name: "IX_Deportistas_IdProvincia",
                 table: "Deportistas",
-                column: "IdProNavigationIdPro");
+                column: "IdProvincia");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Deportistas_IdUsuNavigationIdUsu",
+                name: "IX_Deportistas_IdUsuario",
                 table: "Deportistas",
-                column: "IdUsuNavigationIdUsu");
+                column: "IdUsuario");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DetalleCompetencias_IdComNavigationIdCom",
@@ -395,9 +427,9 @@ namespace ProyectoFdiV3.Migrations
                 column: "IdComNavigationIdCom");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Entrenadores_IdProNavigationIdPro",
+                name: "IX_Entrenadores_IdPro",
                 table: "Entrenadores",
-                column: "IdProNavigationIdPro");
+                column: "IdPro");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Entrenadores_IdUsuNavigationIdUsu",
@@ -405,9 +437,9 @@ namespace ProyectoFdiV3.Migrations
                 column: "IdUsuNavigationIdUsu");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Jueces_IdProNavigationIdPro",
+                name: "IX_Jueces_IdPro",
                 table: "Jueces",
-                column: "IdProNavigationIdPro");
+                column: "IdPro");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Jueces_IdUsuNavigationIdUsu",
@@ -415,19 +447,14 @@ namespace ProyectoFdiV3.Migrations
                 column: "IdUsuNavigationIdUsu");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RegistroResultado_CompetenciumNavigationIdCom",
-                table: "RegistroResultado",
-                column: "CompetenciumNavigationIdCom");
+                name: "IX_RegistroResultados_IdCom",
+                table: "RegistroResultados",
+                column: "IdCom");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RegistroResultado_DetalleCompetenciumIdDetalle",
-                table: "RegistroResultado",
-                column: "DetalleCompetenciumIdDetalle");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RegistroResultado_IdDepNavigationIdDep",
-                table: "RegistroResultado",
-                column: "IdDepNavigationIdDep");
+                name: "IX_RegistroResultados_IdDep",
+                table: "RegistroResultados",
+                column: "IdDep");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -436,25 +463,16 @@ namespace ProyectoFdiV3.Migrations
                 name: "CompetenciaDeportistas");
 
             migrationBuilder.DropTable(
-                name: "RegistroResultado");
-
-            migrationBuilder.DropTable(
-                name: "Deportistas");
-
-            migrationBuilder.DropTable(
                 name: "DetalleCompetencias");
 
             migrationBuilder.DropTable(
-                name: "Clubs");
-
-            migrationBuilder.DropTable(
-                name: "Entrenadores");
-
-            migrationBuilder.DropTable(
-                name: "Generos");
+                name: "RegistroResultados");
 
             migrationBuilder.DropTable(
                 name: "Competencias");
+
+            migrationBuilder.DropTable(
+                name: "Deportistas");
 
             migrationBuilder.DropTable(
                 name: "Categorias");
@@ -467,6 +485,15 @@ namespace ProyectoFdiV3.Migrations
 
             migrationBuilder.DropTable(
                 name: "Sedes");
+
+            migrationBuilder.DropTable(
+                name: "Clubs");
+
+            migrationBuilder.DropTable(
+                name: "Entrenadores");
+
+            migrationBuilder.DropTable(
+                name: "Generos");
 
             migrationBuilder.DropTable(
                 name: "Provincias");
